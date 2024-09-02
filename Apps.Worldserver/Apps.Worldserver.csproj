@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Product>WorldServer</Product>
+    <Version>1.0.0</Version>
+    <Description>WorldServer is a flexible, enterprise-class translation management system that automates translation tasks and greatly reduces the cost of supporting large volumes of local language content.</Description>
+    <AssemblyName>Apps.Worldserver</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blackbird.Applications.Sdk.Common" Version="2.9.0-alpha1" />
+    <PackageReference Include="Blackbird.Applications.Sdk.Utils" Version="1.0.25" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource CopyToOutputDirectory="Always" Include="image\icon.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Extensions\" />
+    <Folder Include="Webhooks\Handlers\" />
+    <Folder Include="Webhooks\Models\" />
+  </ItemGroup>
+</Project>
