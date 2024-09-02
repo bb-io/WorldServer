@@ -1,5 +1,4 @@
-﻿using Apps.Worldserver.Connections.OAuth;
-using Blackbird.Applications.Sdk.Common;
+﻿using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Authentication.OAuth2;
 using Blackbird.Applications.Sdk.Common.Metadata;
 

@@ -13,11 +13,6 @@ public class WorldserverInvocable : BaseInvocable
     protected WorldserverClient Client { get; }
     public WorldserverInvocable(InvocationContext invocationContext) : base(invocationContext)
     {
-        Client = new();
-    }
-
-    private string ObtainSessionToken()
-    {
-
+        Client = new(Creds);
     }
 }
