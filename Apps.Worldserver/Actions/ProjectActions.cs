@@ -7,6 +7,8 @@ using Apps.Worldserver.Dto;
 using Apps.Worldserver.Models.Projects.Response;
 using Blackbird.Applications.Sdk.Common;
 using Apps.Worldserver.Models.Projects.Request;
+using Newtonsoft.Json;
+using Apps.Worldserver.Constants;
 
 namespace Apps.Worldserver.Actions;
 
@@ -35,6 +37,35 @@ public class ProjectActions : WorldserverInvocable
         var request = new WorldserverRequest($"/projects/{projectRequest.ProjectId}", Method.Get);
         var response = await Client.ExecuteWithErrorHandling<ProjectDto>(request);
         return response;
+    }
+
+    [Action("Update project", Description = "Update project")]
+    public async Task UpdateProject([ActionParameter] GetProjectRequest projectRequest,
+        [ActionParameter] UpdateProjectRequest updateRequest)
+    {
+        var getProjectRequest = new WorldserverRequest($"/projects/{projectRequest.ProjectId}", Method.Get);
+        var getProjectResponse = await Client.ExecuteWithErrorHandling<ProjectDto>(getProjectRequest);
+
+        var updateDto = new UpdateProjectDto() { Id = int.Parse(projectRequest.ProjectId) };
+
+        if (updateRequest.DueDate.HasValue)
+            updateDto.DueDate = updateRequest.DueDate;
+
+        if (!string.IsNullOrEmpty(updateRequest.CostModelId))
+        {
+            updateDto.CostModel = new()
+            {
+                Id = int.Parse(updateRequest.CostModelId),
+                SourceLocale = new() { Id = getProjectResponse.SourceLocale.Id }
+            };
+        }
+
+        if (!string.IsNullOrEmpty(updateRequest.QualityModelId))
+            updateDto.QualityModel = new() { Id = int.Parse(updateRequest.QualityModelId) };
+
+        var request = new WorldserverRequest($"/projects/{projectRequest.ProjectId}", Method.Patch);
+        request.AddJsonBody(JsonConvert.SerializeObject(new[] { updateDto }, JsonConfig.Settings));
+        await Client.ExecuteWithErrorHandling(request);
     }
 
     [Action("Complete project step", Description = "Complete project step")]
