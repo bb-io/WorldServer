@@ -8,7 +8,7 @@ public class ProjectDto
     public string Description { get; set; }
     public LocaleDto TargetLocale { get; set; }
     public LocaleDto SourceLocale { get; set; }
-    public List<Task> Tasks { get; set; }
+    public List<TaskDto> Tasks { get; set; }
     public Workgroup Workgroup { get; set; }
     public Workflow Workflow { get; set; }
     public DateTime CreationDate { get; set; }
@@ -131,7 +131,7 @@ public class StatusDto
     public string DisplayText { get; set; }
 }
 
-public class Task
+public class TaskDto
 {
     public int Id { get; set; }
     public Project Project { get; set; }

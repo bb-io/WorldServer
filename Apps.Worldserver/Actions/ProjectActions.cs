@@ -28,4 +28,30 @@ public class ProjectActions : WorldserverInvocable
         var response = await Client.ExecuteWithErrorHandling<CollectionResponseDto<ProjectDto>>(request);
         return new(response);
     }
+
+    [Action("Get project", Description = "Get project")]
+    public async Task<ProjectDto> GetProject([ActionParameter] GetProjectRequest projectRequest)
+    {
+        var request = new WorldserverRequest($"/projects/{projectRequest.ProjectId}", Method.Get);
+        var response = await Client.ExecuteWithErrorHandling<ProjectDto>(request);
+        return response;
+    }
+
+    [Action("Complete project step", Description = "Complete project step")]
+    public async Task CompleteProjectStep(
+        [ActionParameter] GetProjectRequest projectRequest,
+        [ActionParameter] GetWorkflowStepRequest workflowStepRequest,
+        [ActionParameter] GetWorkflowStepTransitionRequest transitionRequest)
+    {
+        var completeStepRequest = new WorldserverRequest($"/projects/complete", Method.Post);
+        completeStepRequest.AddBody(new[]
+        {
+            new
+            {
+                id = int.Parse(projectRequest.ProjectId),
+                transitionId = int.Parse(transitionRequest.TransitionId)
+            }
+        });
+        await Client.ExecuteWithErrorHandling(completeStepRequest);
+    }
 }
