@@ -10,6 +10,7 @@ using Apps.Worldserver.Models.Projects.Request;
 
 namespace Apps.Worldserver.Actions;
 
+[ActionList]
 public class ProjectActions : WorldserverInvocable
 {
     public ProjectActions(InvocationContext invocationContext) : base(invocationContext)
