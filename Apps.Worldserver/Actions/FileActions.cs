@@ -9,6 +9,7 @@ using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using RestSharp;
+using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
 
@@ -37,8 +38,8 @@ public class FileActions : WorldserverInvocable
         var response = await Client.ExecuteWithErrorHandling(request);
 
         using var stream = new MemoryStream(response.RawBytes);
-        var contentDisposition = new ContentDisposition(response.ContentHeaders.First(x => x.Name == "Content-Disposition").Value.ToString());
-        var file = await _fileManagementClient.UploadAsync(stream, MediaTypeNames.Text.Html, contentDisposition.FileName);
+        var contentDisposition = ContentDispositionHeaderValue.Parse(response.ContentHeaders.First(x => x.Name == "Content-Disposition").Value.ToString());
+        var file = await _fileManagementClient.UploadAsync(stream, MediaTypeNames.Text.Html, contentDisposition.FileNameStar);
         return file;
     }
 }
