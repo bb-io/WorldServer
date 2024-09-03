@@ -9,6 +9,7 @@ using Blackbird.Applications.Sdk.Common;
 using Apps.Worldserver.Models.Projects.Request;
 using Newtonsoft.Json;
 using Apps.Worldserver.Constants;
+using Apps.Worldserver.Dto.UpdateDto;
 
 namespace Apps.Worldserver.Actions;
 
@@ -27,7 +28,7 @@ public class ProjectActions : WorldserverInvocable
         if (!string.IsNullOrEmpty(searchProjectsRequest.LocaleId))
             request.AddQueryParameter("localeId", searchProjectsRequest.LocaleId);
 
-        var response = await Client.ExecuteWithErrorHandling<CollectionResponseDto<ProjectDto>>(request);
+        var response = await Client.Paginate<ProjectDto>(request);
         return new(response);
     }
 

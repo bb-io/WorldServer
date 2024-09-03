@@ -15,10 +15,11 @@ public class ProjectDataHandler : WorldserverInvocable, IAsyncDataSourceHandler
 
     public async Task<Dictionary<string, string>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
     {
-        var projectsRequest = new WorldserverRequest("/projects", Method.Get);
-        var projects = await Client.ExecuteWithErrorHandling<CollectionResponseDto<ProjectDto>>(projectsRequest);
-        return projects.Items
+        var projectsRequest = new WorldserverRequest("/projects/search", Method.Get);
+        var projects = await Client.Paginate<ProjectDto>(projectsRequest);
+        return projects
             .Where(str => context.SearchString is null || str.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
+            .Take(50)
             .ToDictionary(k => k.Id.ToString(), v => v.Name);
     }
 }

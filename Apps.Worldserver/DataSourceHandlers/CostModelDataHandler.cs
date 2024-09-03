@@ -19,6 +19,7 @@ public class CostModelDataHandler : WorldserverInvocable, IAsyncDataSourceHandle
         var costModels = await Client.ExecuteWithErrorHandling<CollectionResponseDto<CostModelDto>>(costModelRequest);
         return costModels.Items
             .Where(str => context.SearchString is null || str.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
+            .Take(50)
             .ToDictionary(k => k.Id.ToString(), v => v.Name);
     }
 }

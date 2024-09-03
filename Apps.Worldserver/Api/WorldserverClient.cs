@@ -1,6 +1,7 @@
 using Apps.Worldserver.Constants;
 using Apps.Worldserver.Dto;
 using Blackbird.Applications.Sdk.Common.Authentication;
+using Blackbird.Applications.Sdk.Utils.Extensions.String;
 using Blackbird.Applications.Sdk.Utils.RestSharp;
 using Newtonsoft.Json;
 using RestSharp;
@@ -9,7 +10,7 @@ namespace Apps.Worldserver.Api;
 
 public class WorldserverClient : BlackBirdRestClient
 {
-    private const int Limit = 100;
+    private const int Limit = 30;
 
     public WorldserverClient(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentials) : base(new()
     {
@@ -35,18 +36,18 @@ public class WorldserverClient : BlackBirdRestClient
         var baseUrl = request.Resource;
 
         var result = new List<T>();
-        //PaginationResponse<T> response;
-        //do
-        //{
-        //    request.Resource = baseUrl
-        //        .SetQueryParameter("offset", offset.ToString())
-        //        .SetQueryParameter("limit", Limit.ToString());
+        CollectionResponseDto<T> response;
+        do
+        {
+            request.Resource = baseUrl
+                .SetQueryParameter("offset", offset.ToString())
+                .SetQueryParameter("limit", Limit.ToString());
 
-        //    response = await ExecuteWithErrorHandling<PaginationResponse<T>>(request);
-        //    result.AddRange(response.Items);
+            response = await ExecuteWithErrorHandling<CollectionResponseDto<T>>(request);
+            result.AddRange(response.Items);
 
-        //    offset += Limit;
-        //} while (result.Count < response.Pagination.Total);
+            offset += Limit;
+        } while (result.Count < response.Total);
 
         return result;
     }

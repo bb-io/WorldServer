@@ -13,6 +13,7 @@ public class ConnectionValidator : IConnectionValidator
         CancellationToken cancellationToken)
     {
         var request = new WorldserverRequest($"/projects", Method.Get);
+        request.AddQueryParameter("limit", 1);
         var response = await new WorldserverClient(authenticationCredentialsProviders).ExecuteWithErrorHandling<CollectionResponseDto<ProjectDto>>(request);
         return new()
         {

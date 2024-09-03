@@ -1,4 +1,4 @@
-﻿namespace Apps.Worldserver.Dto;
+﻿namespace Apps.Worldserver.Dto.UpdateDto;
 
 public class UpdateProjectDto
 {

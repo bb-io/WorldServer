@@ -16,8 +16,8 @@ public class LocaleDataHandler : WorldserverInvocable, IAsyncDataSourceHandler
     public async Task<Dictionary<string, string>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
     {
         var localeRequest = new WorldserverRequest("/locales", Method.Get);
-        var locales = await Client.ExecuteWithErrorHandling<CollectionResponseDto<LocaleDto>>(localeRequest);
-        return locales.Items
+        var locales = await Client.Paginate<LocaleDto>(localeRequest);
+        return locales
             .Where(str => context.SearchString is null || str.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
             .ToDictionary(k => k.Id.ToString(), v => v.Name);
     }

@@ -4,9 +4,9 @@ namespace Apps.Worldserver.Models.Projects.Response;
 
 public class SearchProjectsResponse
 {
-    public SearchProjectsResponse(CollectionResponseDto<ProjectDto> collection)
+    public SearchProjectsResponse(IEnumerable<ProjectDto> collection)
     {
-        Projects = collection.Items.ToList();
+        Projects = collection.ToList();
     }
 
     public List<ProjectDto> Projects { get; set; }

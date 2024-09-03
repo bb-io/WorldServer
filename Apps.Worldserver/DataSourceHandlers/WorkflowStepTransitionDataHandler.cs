@@ -38,6 +38,7 @@ public class WorkflowStepTransitionDataHandler : WorldserverInvocable, IAsyncDat
 
         return workflowResponse.Steps.First(x => x.Id == int.Parse(StepRequest.WorkflowStepId)).OutboundTransitions
             .Where(str => context.SearchString is null || str.Text.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
+            .Take(50)
             .ToDictionary(k => k.Id.ToString(), v => v.Text);
     }
 }
