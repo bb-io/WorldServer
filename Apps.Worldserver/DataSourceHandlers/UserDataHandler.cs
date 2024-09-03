@@ -14,7 +14,7 @@ public class UserDataHandler : WorldserverInvocable, IAsyncDataSourceHandler
 
     public async Task<Dictionary<string, string>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
     {
-        var usersRequest = new WorldserverRequest("/users", Method.Get);
+        var usersRequest = new WorldserverRequest("/v2/users", Method.Get);
         var users = await Client.Paginate<UserDto>(usersRequest);
         return users
             .Where(str => context.SearchString is null || str.Username.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))

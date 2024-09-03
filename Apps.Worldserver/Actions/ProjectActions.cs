@@ -23,7 +23,7 @@ public class ProjectActions : WorldserverInvocable
     [Action("Search projects", Description = "Search projects")]
     public async Task<SearchProjectsResponse> SearchProjects([ActionParameter] SearchProjectsRequest searchProjectsRequest)
     {
-        var request = new WorldserverRequest($"/projects", Method.Get);
+        var request = new WorldserverRequest($"/v2/projects", Method.Get);
 
         if (!string.IsNullOrEmpty(searchProjectsRequest.LocaleId))
             request.AddQueryParameter("localeId", searchProjectsRequest.LocaleId);
@@ -35,7 +35,7 @@ public class ProjectActions : WorldserverInvocable
     [Action("Get project", Description = "Get project")]
     public async Task<ProjectDto> GetProject([ActionParameter] GetProjectRequest projectRequest)
     {
-        var request = new WorldserverRequest($"/projects/{projectRequest.ProjectId}", Method.Get);
+        var request = new WorldserverRequest($"/v2/projects/{projectRequest.ProjectId}", Method.Get);
         var response = await Client.ExecuteWithErrorHandling<ProjectDto>(request);
         return response;
     }
@@ -44,7 +44,7 @@ public class ProjectActions : WorldserverInvocable
     public async Task UpdateProject([ActionParameter] GetProjectRequest projectRequest,
         [ActionParameter] UpdateProjectRequest updateRequest)
     {
-        var getProjectRequest = new WorldserverRequest($"/projects/{projectRequest.ProjectId}", Method.Get);
+        var getProjectRequest = new WorldserverRequest($"/v2/projects/{projectRequest.ProjectId}", Method.Get);
         var getProjectResponse = await Client.ExecuteWithErrorHandling<ProjectDto>(getProjectRequest);
 
         var updateDto = new UpdateProjectDto() { Id = int.Parse(projectRequest.ProjectId) };
@@ -64,7 +64,7 @@ public class ProjectActions : WorldserverInvocable
         if (!string.IsNullOrEmpty(updateRequest.QualityModelId))
             updateDto.QualityModel = new() { Id = int.Parse(updateRequest.QualityModelId) };
 
-        var request = new WorldserverRequest($"/projects/{projectRequest.ProjectId}", Method.Patch);
+        var request = new WorldserverRequest($"/v2/projects/{projectRequest.ProjectId}", Method.Patch);
         request.AddJsonBody(JsonConvert.SerializeObject(new[] { updateDto }, JsonConfig.Settings));
         await Client.ExecuteWithErrorHandling(request);
     }
@@ -75,7 +75,7 @@ public class ProjectActions : WorldserverInvocable
         [ActionParameter] GetWorkflowStepRequest workflowStepRequest,
         [ActionParameter] GetWorkflowStepTransitionRequest transitionRequest)
     {
-        var completeStepRequest = new WorldserverRequest($"/projects/complete", Method.Post);
+        var completeStepRequest = new WorldserverRequest($"/v2/projects/complete", Method.Post);
         completeStepRequest.AddBody(new[]
         {
             new

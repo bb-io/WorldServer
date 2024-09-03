@@ -15,7 +15,7 @@ public class QualityModelDataHandler : WorldserverInvocable, IAsyncDataSourceHan
 
     public async Task<Dictionary<string, string>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
     {
-        var qualityModelRequest = new WorldserverRequest("/qualityModels", Method.Get);
+        var qualityModelRequest = new WorldserverRequest("/v2/qualityModels", Method.Get);
         var qualityModelResponse = await Client.ExecuteWithErrorHandling<CollectionResponseDto<QualityModelDto>>(qualityModelRequest);
         return qualityModelResponse.Items
             .Where(str => context.SearchString is null || str.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))

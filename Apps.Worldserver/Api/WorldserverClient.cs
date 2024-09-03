@@ -54,7 +54,7 @@ public class WorldserverClient : BlackBirdRestClient
 
     private static Uri GetUri(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentials)
     {
-        return new Uri($"{authenticationCredentials.First(x => x.KeyName == CredsNames.Url).Value.TrimEnd('/')}/ws-api/v2");
+        return new Uri($"{authenticationCredentials.First(x => x.KeyName == CredsNames.Url).Value.TrimEnd('/')}/ws-api");
     }
 
     private string ObtainSessionToken(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentials)
@@ -62,7 +62,7 @@ public class WorldserverClient : BlackBirdRestClient
         var username = authenticationCredentials.First(x => x.KeyName == CredsNames.Username).Value;
         var password = authenticationCredentials.First(x => x.KeyName == CredsNames.Password).Value;
 
-        var request = new RestRequest("/login", Method.Post);
+        var request = new RestRequest("/v2/login", Method.Post);
         request.AddBody(new
         {
             username,

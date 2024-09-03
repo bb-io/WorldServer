@@ -24,10 +24,10 @@ public class WorkflowStepsDataHandler : WorldserverInvocable, IAsyncDataSourceHa
         if (string.IsNullOrEmpty(ProjectRequest.ProjectId))
             throw new ArgumentException("Please specify project first");
 
-        var projectRequest = new WorldserverRequest($"/projects/{ProjectRequest.ProjectId}", Method.Get);
+        var projectRequest = new WorldserverRequest($"/v2/projects/{ProjectRequest.ProjectId}", Method.Get);
         var projectResponse = await Client.ExecuteWithErrorHandling<ProjectDto>(projectRequest);
 
-        var workflowRequest = new WorldserverRequest($"/workflows/{projectResponse.Workflow.Id}", Method.Get);
+        var workflowRequest = new WorldserverRequest($"/v2/workflows/{projectResponse.Workflow.Id}", Method.Get);
         var workflowResponse = await Client.ExecuteWithErrorHandling<WorkflowDto>(workflowRequest);
 
         return workflowResponse.Steps

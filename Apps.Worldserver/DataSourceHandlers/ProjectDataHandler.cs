@@ -15,7 +15,7 @@ public class ProjectDataHandler : WorldserverInvocable, IAsyncDataSourceHandler
 
     public async Task<Dictionary<string, string>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
     {
-        var projectsRequest = new WorldserverRequest("/projects", Method.Get);
+        var projectsRequest = new WorldserverRequest("/v2/projects", Method.Get);
         var projects = await Client.Paginate<ProjectDto>(projectsRequest);
         return projects
             .Where(str => context.SearchString is null || str.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))

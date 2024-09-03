@@ -33,7 +33,7 @@ public class ProjectDto
     public int TotalAutoErrorTasks { get; set; }
     public string Status { get; set; }
     public Client Client { get; set; }
-    public ProjectType ProjectType { get; set; }
+    public ProjectTypeDto ProjectType { get; set; }
     public ScopingConfiguration ScopingConfiguration { get; set; }
 }
 
@@ -104,17 +104,6 @@ public class Project
     public int FinishedWords { get; set; }
     public int Errors { get; set; }
     public string Status { get; set; }
-}
-
-public class ProjectType
-{
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public string Description { get; set; }
-    public LocaleDto SourceLocale { get; set; }
-    public bool DueDateRequired { get; set; }
-    public bool AttributeAvailability { get; set; }
-    public DefaultWorkflow DefaultWorkflow { get; set; }
 }
 
 public class ScopingConfiguration

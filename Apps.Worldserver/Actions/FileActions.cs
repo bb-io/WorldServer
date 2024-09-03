@@ -1,4 +1,5 @@
 ﻿using Apps.Worldserver.Api;
+using Apps.Worldserver.Dto;
 using Apps.Worldserver.Invocables;
 using Apps.Worldserver.Models.Files.Request;
 using Apps.Worldserver.Models.Tasks.Request;
@@ -28,7 +29,7 @@ public class FileActions : WorldserverInvocable
     public async Task<FileReference> DownloadFile([ActionParameter] GetTaskRequest taskRequest,
         [ActionParameter] DownloadFileRequest downloadFileRequest)
     {
-        var request = new WorldserverRequest($"/files/asset", Method.Get);
+        var request = new WorldserverRequest($"/v2/files/asset", Method.Get);
         request.AddQueryParameter("resourceId", taskRequest.TaskId);
 
         if(!string.IsNullOrEmpty(downloadFileRequest.AssetLocationType))
@@ -43,13 +44,13 @@ public class FileActions : WorldserverInvocable
     }
 
     [Action("Upload file", Description = "Upload file")]
-    public async Task UploadFile([ActionParameter] UploadFileRequest uploadFileRequest)
+    public async Task<UploadedFileDto> UploadFile([ActionParameter] UploadFileRequest uploadFileRequest)
     {
-        var request = new WorldserverRequest($"../v1/files", Method.Post);
+        var request = new WorldserverRequest($"/v1/files", Method.Post);
 
         var fileBytes = await _fileManagementClient.DownloadAsync(uploadFileRequest.File).Result.GetByteData();
         request.AddFile("file", fileBytes, uploadFileRequest.File.Name);
 
-        await Client.ExecuteWithErrorHandling(request);
+        return await Client.ExecuteWithErrorHandling<UploadedFileDto>(request);
     }
 }

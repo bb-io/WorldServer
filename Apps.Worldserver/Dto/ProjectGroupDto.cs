@@ -28,7 +28,7 @@ public class ProjectGroupDto
     public int TotalTaskIssues { get; set; }
     public int TotalTcrTasks { get; set; }
     public Client Client { get; set; }
-    public ProjectType ProjectType { get; set; }
+    public ProjectTypeDto ProjectType { get; set; }
     public List<Project> Projects { get; set; }
     public int TotalProjects { get; set; }
     public int CanceledTasks { get; set; }

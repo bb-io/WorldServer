@@ -30,10 +30,10 @@ public class WorkflowStepTransitionDataHandler : WorldserverInvocable, IAsyncDat
         if (string.IsNullOrEmpty(StepRequest.WorkflowStepId))
             throw new ArgumentException("Please specify workflow step first");
 
-        var projectRequest = new WorldserverRequest($"/projects/{ProjectRequest.ProjectId}", Method.Get);
+        var projectRequest = new WorldserverRequest($"/v2/projects/{ProjectRequest.ProjectId}", Method.Get);
         var projectResponse = await Client.ExecuteWithErrorHandling<ProjectDto>(projectRequest);
 
-        var workflowRequest = new WorldserverRequest($"/workflows/{projectResponse.Workflow.Id}", Method.Get);
+        var workflowRequest = new WorldserverRequest($"/v2/workflows/{projectResponse.Workflow.Id}", Method.Get);
         var workflowResponse = await Client.ExecuteWithErrorHandling<WorkflowDto>(workflowRequest);
 
         return workflowResponse.Steps.First(x => x.Id == int.Parse(StepRequest.WorkflowStepId)).OutboundTransitions

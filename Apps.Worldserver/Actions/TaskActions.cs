@@ -21,7 +21,7 @@ public class TaskActions : WorldserverInvocable
     [Action("Search tasks", Description = "Search tasks")]
     public async Task<SearchTasksResponse> SearchTasks([ActionParameter] SearchTasksRequest searchTasksRequest)
     {
-        var request = new WorldserverRequest($"/tasks/search", Method.Post);
+        var request = new WorldserverRequest($"/v2/tasks/search", Method.Post);
 
         var filters = new List<FieldFilterV1Dto>();
         if (!string.IsNullOrEmpty(searchTasksRequest.ProjectId))
@@ -41,7 +41,7 @@ public class TaskActions : WorldserverInvocable
     [Action("Get task", Description = "Get task")]
     public async Task<TaskDto> GetTask([ActionParameter] GetTaskRequest taskRequest)
     {
-        var request = new WorldserverRequest($"/tasks/{taskRequest.TaskId}", Method.Get);
+        var request = new WorldserverRequest($"/v2/tasks/{taskRequest.TaskId}", Method.Get);
         var response = await Client.ExecuteWithErrorHandling<TaskDto>(request);
         return response;
     }
@@ -50,7 +50,7 @@ public class TaskActions : WorldserverInvocable
     public async Task ClaimTask([ActionParameter] GetTaskRequest taskRequest,
         [ActionParameter] ClaimTaskRequest claimRequest)
     {
-        var request = new WorldserverRequest($"/tasks/claim", Method.Post);
+        var request = new WorldserverRequest($"/v2/tasks/claim", Method.Post);
         request.AddBody(new[] { new { id = int.Parse(taskRequest.TaskId) } });
         await Client.ExecuteWithErrorHandling(request);
 
@@ -58,7 +58,7 @@ public class TaskActions : WorldserverInvocable
         {
             if(claimRequest.CostManagement == "include")
             {
-                var includeCostRequest = new WorldserverRequest($"/tasks/includeCost", Method.Post);
+                var includeCostRequest = new WorldserverRequest($"/v2/tasks/includeCost", Method.Post);
                 includeCostRequest.AddBody(new[]
                 {
                     new { id = int.Parse(taskRequest.TaskId) }
@@ -67,7 +67,7 @@ public class TaskActions : WorldserverInvocable
             }
             else
             {
-                var excludeCostRequest = new WorldserverRequest($"/tasks/excludeCost", Method.Post);
+                var excludeCostRequest = new WorldserverRequest($"/v2/tasks/excludeCost", Method.Post);
                 excludeCostRequest.AddBody(new[]
                 {
                     new { id = int.Parse(taskRequest.TaskId) }
@@ -80,7 +80,7 @@ public class TaskActions : WorldserverInvocable
     [Action("Unclaim task", Description = "Unclaim task")]
     public async Task UnclaimTask([ActionParameter] GetTaskRequest taskRequest)
     {
-        var request = new WorldserverRequest($"/tasks/unclaim", Method.Post);
+        var request = new WorldserverRequest($"/v2/tasks/unclaim", Method.Post);
         request.AddBody(new[] { new { id = int.Parse(taskRequest.TaskId) } });
         await Client.ExecuteWithErrorHandling(request);
     }
@@ -89,7 +89,7 @@ public class TaskActions : WorldserverInvocable
     public async Task UpdateTask([ActionParameter] GetTaskRequest taskRequest,
         [ActionParameter] UpdateTaskRequest updateRequest)
     {
-        var request = new WorldserverRequest($"/tasks", Method.Patch);
+        var request = new WorldserverRequest($"/v2/tasks", Method.Patch);
 
         var updateDto = new UpdateTaskDto() { Id = int.Parse(taskRequest.TaskId) };
         if (updateRequest.Priority.HasValue)

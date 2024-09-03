@@ -15,7 +15,7 @@ public class CostModelDataHandler : WorldserverInvocable, IAsyncDataSourceHandle
 
     public async Task<Dictionary<string, string>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
     {
-        var costModelRequest = new WorldserverRequest("/costModels", Method.Get);
+        var costModelRequest = new WorldserverRequest("/v2/costModels", Method.Get);
         var costModels = await Client.ExecuteWithErrorHandling<CollectionResponseDto<CostModelDto>>(costModelRequest);
         return costModels.Items
             .Where(str => context.SearchString is null || str.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))

@@ -6,19 +6,20 @@ using Blackbird.Applications.Sdk.Common.Invocation;
 using RestSharp;
 
 namespace Apps.Worldserver.DataSourceHandlers;
-
-public class LocaleDataHandler : WorldserverInvocable, IAsyncDataSourceHandler
+public class ClientDataHandler : WorldserverInvocable, IAsyncDataSourceHandler
 {
-    public LocaleDataHandler(InvocationContext invocationContext) : base(invocationContext)
+    public ClientDataHandler(InvocationContext invocationContext) : base(invocationContext)
     {
     }
 
     public async Task<Dictionary<string, string>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
     {
-        var localeRequest = new WorldserverRequest("/v2/locales", Method.Get);
-        var locales = await Client.Paginate<LocaleDto>(localeRequest);
-        return locales
+        var clientRequest = new WorldserverRequest("/v2/clients", Method.Get);
+        var clients = await Client.ExecuteWithErrorHandling<CollectionResponseDto<ClientDto>>(clientRequest);
+        return clients.Items
             .Where(str => context.SearchString is null || str.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
+            .Take(50)
             .ToDictionary(k => k.Id.ToString(), v => v.Name);
     }
 }
+
