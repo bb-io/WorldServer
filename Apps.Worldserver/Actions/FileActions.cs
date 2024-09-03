@@ -49,6 +49,7 @@ public class FileActions : WorldserverInvocable
         var request = new WorldserverRequest($"/v1/files", Method.Post);
 
         var fileBytes = await _fileManagementClient.DownloadAsync(uploadFileRequest.File).Result.GetByteData();
+        request.AlwaysMultipartFormData = true;
         request.AddFile("file", fileBytes, uploadFileRequest.File.Name);
 
         return await Client.ExecuteWithErrorHandling<UploadedFileDto>(request);
