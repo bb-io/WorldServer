@@ -15,7 +15,7 @@ public class TaskDataHandler : WorldserverInvocable, IAsyncDataSourceHandler
 
     public async Task<Dictionary<string, string>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
     {
-        var projectsRequest = new WorldserverRequest("/tasks/search", Method.Get);
+        var projectsRequest = new WorldserverRequest("/tasks/search", Method.Post);
 
         var filters = new List<FieldFilterDto>();
         if (!string.IsNullOrEmpty(context.SearchString))
