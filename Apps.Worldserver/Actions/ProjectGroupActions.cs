@@ -26,6 +26,7 @@ public class ProjectGroupActions : WorldserverInvocable
         if (!string.IsNullOrEmpty(searchProjectGroupsRequest.Name))
             filters.Add(new("name", "TEXT", searchProjectGroupsRequest.Name));
 
+        request.AddBody(filters);
         var response = await Client.Paginate<ProjectGroupDto>(request);
         return new(response);
     }

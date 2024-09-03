@@ -45,7 +45,7 @@ public class FileActions : WorldserverInvocable
     [Action("Upload file", Description = "Upload file")]
     public async Task UploadFile([ActionParameter] UploadFileRequest uploadFileRequest)
     {
-        var request = new WorldserverRequest($"/files", Method.Post);
+        var request = new WorldserverRequest($"../v1/files", Method.Post);
 
         var fileBytes = await _fileManagementClient.DownloadAsync(uploadFileRequest.File).Result.GetByteData();
         request.AddFile("file", fileBytes, uploadFileRequest.File.Name);
