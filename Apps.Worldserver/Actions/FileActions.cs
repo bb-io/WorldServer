@@ -37,7 +37,7 @@ public class FileActions : WorldserverInvocable
         var response = await Client.ExecuteWithErrorHandling(request);
 
         using var stream = new MemoryStream(response.RawBytes);
-        var contentDisposition = new ContentDisposition(response.Headers.First(x => x.Name == "Content-Disposition").Value.ToString());
+        var contentDisposition = new ContentDisposition(response.ContentHeaders.First(x => x.Name == "Content-Disposition").Value.ToString());
         var file = await _fileManagementClient.UploadAsync(stream, MediaTypeNames.Text.Html, contentDisposition.FileName);
         return file;
     }
