@@ -17,7 +17,7 @@ public class TaskDataHandler : WorldserverInvocable, IAsyncDataSourceHandler
     {
         var projectsRequest = new WorldserverRequest("/tasks/search", Method.Post);
 
-        var filters = new List<FieldFilterDto>();
+        var filters = new List<FieldFilterV1Dto>();
         if (!string.IsNullOrEmpty(context.SearchString))
             filters.Add(new("assets", "like", $"%{context.SearchString}%"));
 

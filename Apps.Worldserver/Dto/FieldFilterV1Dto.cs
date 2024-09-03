@@ -1,8 +1,8 @@
 ﻿namespace Apps.Worldserver.Dto;
 
-public class FieldFilterDto
+public class FieldFilterV1Dto
 {
-    public FieldFilterDto(string fieldName, string operatorName, string value)
+    public FieldFilterV1Dto(string fieldName, string operatorName, string value)
     {
         Field = fieldName;
         Operator = operatorName;

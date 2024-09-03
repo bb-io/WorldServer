@@ -1,5 +1,4 @@
 ﻿using Apps.Worldserver.Api;
-using Apps.Worldserver.Dto;
 using Apps.Worldserver.Invocables;
 using Apps.Worldserver.Models.Files.Request;
 using Apps.Worldserver.Models.Tasks.Request;
@@ -7,11 +6,11 @@ using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
+using Blackbird.Applications.Sdk.Utils.Extensions.Files;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using RestSharp;
 using System.Net.Http.Headers;
 using System.Net.Mime;
-using System.Text;
 
 namespace Apps.Worldserver.Actions;
 
@@ -29,7 +28,7 @@ public class FileActions : WorldserverInvocable
     public async Task<FileReference> DownloadFile([ActionParameter] GetTaskRequest taskRequest,
         [ActionParameter] DownloadFileRequest downloadFileRequest)
     {
-        var request = new WorldserverRequest($"files/asset", Method.Get);
+        var request = new WorldserverRequest($"/files/asset", Method.Get);
         request.AddQueryParameter("resourceId", taskRequest.TaskId);
 
         if(!string.IsNullOrEmpty(downloadFileRequest.AssetLocationType))
@@ -41,5 +40,16 @@ public class FileActions : WorldserverInvocable
         var contentDisposition = ContentDispositionHeaderValue.Parse(response.ContentHeaders.First(x => x.Name == "Content-Disposition").Value.ToString());
         var file = await _fileManagementClient.UploadAsync(stream, MediaTypeNames.Text.Html, contentDisposition.FileNameStar);
         return file;
+    }
+
+    [Action("Upload file", Description = "Upload file")]
+    public async Task UploadFile([ActionParameter] UploadFileRequest uploadFileRequest)
+    {
+        var request = new WorldserverRequest($"/files", Method.Post);
+
+        var fileBytes = await _fileManagementClient.DownloadAsync(uploadFileRequest.File).Result.GetByteData();
+        request.AddFile("file", fileBytes, uploadFileRequest.File.Name);
+
+        await Client.ExecuteWithErrorHandling(request);
     }
 }
