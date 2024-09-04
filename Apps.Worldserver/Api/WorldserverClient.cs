@@ -52,12 +52,12 @@ public class WorldserverClient : BlackBirdRestClient
         return result;
     }
 
-    private static Uri GetUri(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentials)
+    public static Uri GetUri(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentials)
     {
         return new Uri($"{authenticationCredentials.First(x => x.KeyName == CredsNames.Url).Value.TrimEnd('/')}/ws-api");
     }
 
-    private string ObtainSessionToken(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentials)
+    public string ObtainSessionToken(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentials)
     {
         var username = authenticationCredentials.First(x => x.KeyName == CredsNames.Username).Value;
         var password = authenticationCredentials.First(x => x.KeyName == CredsNames.Password).Value;

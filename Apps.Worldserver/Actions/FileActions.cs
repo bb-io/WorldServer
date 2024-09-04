@@ -3,15 +3,18 @@ using Apps.Worldserver.Dto;
 using Apps.Worldserver.Invocables;
 using Apps.Worldserver.Models.Files.Request;
 using Apps.Worldserver.Models.Tasks.Request;
+using Apps.Worldserver.Utils;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
-using Blackbird.Applications.Sdk.Utils.Extensions.Files;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
+using Newtonsoft.Json;
 using RestSharp;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Mime;
+using System.Text;
 
 namespace Apps.Worldserver.Actions;
 
@@ -46,12 +49,19 @@ public class FileActions : WorldserverInvocable
     [Action("Upload file", Description = "Upload file")]
     public async Task<UploadedFileDto> UploadFile([ActionParameter] UploadFileRequest uploadFileRequest)
     {
-        var request = new WorldserverRequest($"/v1/files", Method.Post);
+        var fileStream = await _fileManagementClient.DownloadAsync(uploadFileRequest.File);
 
-        var fileBytes = await _fileManagementClient.DownloadAsync(uploadFileRequest.File).Result.GetByteData();
-        request.AlwaysMultipartFormData = true;
-        request.AddFile("file", fileBytes, uploadFileRequest.File.Name);
+        using var client = new WebClient();
+        client.Headers.Add("token", Client.ObtainSessionToken(InvocationContext.AuthenticationCredentialsProviders));
 
-        return await Client.ExecuteWithErrorHandling<UploadedFileDto>(request);
+        var multipart = new MultipartFormBuilder();
+        multipart.AddFile("file", uploadFileRequest.File.Name, fileStream);
+
+        using var formBodyStream = multipart.GetStream();
+        client.Headers.Add("content-type", multipart.ContentType);
+        var response = client.UploadData(
+            $"{WorldserverClient.GetUri(InvocationContext.AuthenticationCredentialsProviders).ToString().TrimEnd('/')}/v1/files", 
+            formBodyStream.ToArray());
+        return JsonConvert.DeserializeObject<UploadedFileDto>(Encoding.UTF8.GetString(response));
     }
 }
