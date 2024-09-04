@@ -49,18 +49,23 @@ public class FileActions : WorldserverInvocable
     [Action("Upload file", Description = "Upload file")]
     public async Task<UploadedFileDto> UploadFile([ActionParameter] UploadFileRequest uploadFileRequest)
     {
-        var fileStream = await _fileManagementClient.DownloadAsync(uploadFileRequest.File);
+        return await UploadFileWithCustomForm(uploadFileRequest.File);
+    }
+
+    public async Task<UploadedFileDto> UploadFileWithCustomForm(FileReference fileReference)
+    {
+        var fileStream = await _fileManagementClient.DownloadAsync(fileReference);
 
         using var client = new WebClient();
         client.Headers.Add("token", Client.ObtainSessionToken(InvocationContext.AuthenticationCredentialsProviders));
 
         var multipart = new MultipartFormBuilder();
-        multipart.AddFile("file", uploadFileRequest.File.Name, fileStream);
+        multipart.AddFile("file", fileReference.Name, fileStream);
 
         using var formBodyStream = multipart.GetStream();
         client.Headers.Add("content-type", multipart.ContentType);
         var response = client.UploadData(
-            $"{WorldserverClient.GetUri(InvocationContext.AuthenticationCredentialsProviders).ToString().TrimEnd('/')}/v1/files", 
+            $"{WorldserverClient.GetUri(InvocationContext.AuthenticationCredentialsProviders).ToString().TrimEnd('/')}/v1/files",
             formBodyStream.ToArray());
         return JsonConvert.DeserializeObject<UploadedFileDto>(Encoding.UTF8.GetString(response));
     }

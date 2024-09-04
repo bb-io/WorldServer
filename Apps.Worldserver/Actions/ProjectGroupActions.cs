@@ -8,7 +8,6 @@ using Apps.Worldserver.Models.ProjectGroups.Response;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Invocation;
-using Blackbird.Applications.Sdk.Utils.Extensions.Files;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using RestSharp;
 
@@ -51,13 +50,11 @@ public class ProjectGroupActions : WorldserverInvocable
         [ActionParameter] CreateProjectGroupRequest projectGroupRequest)
     {
         var createProjectGroupDto = new CreateProjectGroupDto();
+
+        var fileActions = new FileActions(InvocationContext, _fileManagementClient);
         foreach(var file in projectGroupRequest.Files)
         {
-            var uploadRequest = new WorldserverRequest($"/v1/files", Method.Post);
-            var fileBytes = await _fileManagementClient.DownloadAsync(file).Result.GetByteData();
-            uploadRequest.AddFile("file", fileBytes, file.Name);
-
-            var uploadedFile = await Client.ExecuteWithErrorHandling<UploadedFileDto>(uploadRequest);
+            var uploadedFile = await fileActions.UploadFileWithCustomForm(file);
             createProjectGroupDto.SystemFiles.Add(uploadedFile.InternalName);
         }
         createProjectGroupDto.Name = projectGroupRequest.Name;
