@@ -11,7 +11,7 @@ public class UserDto
     public List<Workgroup> Workgroups { get; set; }
     public List<WsLocale> WsLocales { get; set; }
     public List<UserClient> Clients { get; set; }
-    public List<WorkflowRole> WorkflowRoles { get; set; }
+    public List<WorkflowRoleDto> WorkflowRoles { get; set; }
 }
 
 public class UserClient
