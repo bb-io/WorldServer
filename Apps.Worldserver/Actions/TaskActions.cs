@@ -102,4 +102,22 @@ public class TaskActions : WorldserverInvocable
         request.AddBody(new[] { updateDto });
         await Client.ExecuteWithErrorHandling(request);
     }
+
+    [Action("Assign task", Description = "Assign task")]
+    public async Task AssignTask([ActionParameter] GetTaskRequest taskRequest,
+        [ActionParameter] AssignTaskRequest assignTaskRequest)
+    {
+        var request = new WorldserverRequest($"/v2/tasks/changeAssignees", Method.Post);
+        request.AddBody(new[]
+        {
+            new
+            {
+                id = int.Parse(taskRequest.TaskId),
+                assignedUserIds = assignTaskRequest?.AssignedUserIds?.Select(x => int.Parse(x)).ToList(),
+                assignedRoleIds = assignTaskRequest?.AssignedRoleIds?.Select(x => int.Parse(x)).ToList(),
+                taskStepIds = assignTaskRequest?.TaskStepIds?.Select(x => int.Parse(x)).ToList(),
+            }
+        });
+        await Client.ExecuteWithErrorHandling(request);
+    }
 }

@@ -49,14 +49,6 @@ public class UserProjectType
     public bool AttributeAvailability { get; set; }
 }
 
-public class WorkflowRole
-{
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public bool Disabled { get; set; }
-    public string Description { get; set; }
-}
-
 public class WsLocale
 {
     public int Id { get; set; }
