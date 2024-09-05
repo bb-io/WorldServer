@@ -9,11 +9,11 @@ using RestSharp;
 
 namespace Apps.Worldserver.DataSourceHandlers;
 
-public class WorkflowStepsDataHandler : WorldserverInvocable, IAsyncDataSourceHandler
+public class WorkflowStepDataHandler : WorldserverInvocable, IAsyncDataSourceHandler
 {
     private GetProjectRequest ProjectRequest {  get; set; }
 
-    public WorkflowStepsDataHandler(InvocationContext invocationContext,
+    public WorkflowStepDataHandler(InvocationContext invocationContext,
         [ActionParameter] GetProjectRequest projectRequest) : base(invocationContext)
     {
         ProjectRequest = projectRequest;

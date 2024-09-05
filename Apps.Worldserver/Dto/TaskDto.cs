@@ -19,6 +19,7 @@ public class TaskDto
     public int PendingWords { get; set; }
     public int FinishedWords { get; set; }
     public CurrentTaskStep CurrentTaskStep { get; set; }
+    public List<TaskStepDto> Steps { get; set; }
     public StatusDto Status { get; set; }
     public int CompletionStatus { get; set; }
     public List<Assignee> Assignees { get; set; }

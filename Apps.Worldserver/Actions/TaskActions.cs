@@ -122,4 +122,21 @@ public class TaskActions : WorldserverInvocable
         }, JsonConfig.Settings));
         await Client.ExecuteWithErrorHandling(request);
     }
+
+    [Action("Complete task step", Description = "Complete task step")]
+    public async Task CompleteTaskStep([ActionParameter] GetTaskRequest taskRequest,
+        [ActionParameter] CompleteTaskStepRequest completeStepRequest)
+    {
+        var request = new WorldserverRequest($"/v2/tasks/complete", Method.Post);
+        request.AddJsonBody(JsonConvert.SerializeObject(new[]
+        {
+            new
+            {
+                id = int.Parse(taskRequest.TaskId),
+                transitionId = int.Parse(completeStepRequest.TransitionId),
+                commnet = completeStepRequest.Comment
+            }
+        }, JsonConfig.Settings));
+        await Client.ExecuteWithErrorHandling(request);
+    }
 }

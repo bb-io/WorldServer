@@ -72,6 +72,7 @@ public class CurrentTaskStep
     public string Type { get; set; }
     public string TypeName { get; set; }
     public DateTime CreationDate { get; set; }
+    public List<WorkflowTransition> WorkflowTransitions { get; set; }
 }
 
 public class DefaultWorkflow

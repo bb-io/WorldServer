@@ -7,6 +7,6 @@ namespace Apps.Worldserver.Models.Projects.Request;
 public class GetWorkflowStepRequest
 {
     [Display("Workflow step ID")]
-    [DataSource(typeof(WorkflowStepsDataHandler))]
+    [DataSource(typeof(WorkflowStepDataHandler))]
     public string WorkflowStepId { get; set; }
 }

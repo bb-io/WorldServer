@@ -14,6 +14,7 @@ public class AssignTaskRequest
     public List<string>? AssignedRoleIds { get; set; }
 
     [Display("Task step IDs")]
+    [DataSource(typeof(TaskStepDataHandler))]
     public List<string>? TaskStepIds { get; set; }
 }
 
