@@ -1,4 +1,5 @@
 ﻿using Apps.Worldserver.Api;
+using Apps.Worldserver.Constants;
 using Apps.Worldserver.Dto;
 using Apps.Worldserver.Dto.UpdateDto;
 using Apps.Worldserver.Invocables;
@@ -7,6 +8,7 @@ using Apps.Worldserver.Models.Tasks.Response;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Invocation;
+using Newtonsoft.Json;
 using RestSharp;
 
 namespace Apps.Worldserver.Actions;
@@ -108,7 +110,7 @@ public class TaskActions : WorldserverInvocable
         [ActionParameter] AssignTaskRequest assignTaskRequest)
     {
         var request = new WorldserverRequest($"/v2/tasks/changeAssignees", Method.Post);
-        request.AddBody(new[]
+        request.AddJsonBody(JsonConvert.SerializeObject(new[]
         {
             new
             {
@@ -117,7 +119,7 @@ public class TaskActions : WorldserverInvocable
                 assignedRoleIds = assignTaskRequest?.AssignedRoleIds?.Select(x => int.Parse(x)).ToList(),
                 taskStepIds = assignTaskRequest?.TaskStepIds?.Select(x => int.Parse(x)).ToList(),
             }
-        });
+        }, JsonConfig.Settings));
         await Client.ExecuteWithErrorHandling(request);
     }
 }
