@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Apps.Worldserver.Constants;
 using Apps.Worldserver.Dto.UpdateDto;
 using Apps.Worldserver.Dto;
+using System.Linq;
 
 namespace Apps.Worldserver.Actions;
 
@@ -23,13 +24,19 @@ public class ProjectActions : WorldserverInvocable
     [Action("Search projects", Description = "Search projects")]
     public async Task<SearchProjectsResponse> SearchProjects([ActionParameter] SearchProjectsRequest searchProjectsRequest)
     {
-        var request = new WorldserverRequest($"/v2/projects", Method.Get);
+        var projectsRequest = new WorldserverRequest("/v2/projectGroups/search", Method.Post);
+        var filters = new List<FieldFilterV1Dto>();
 
-        if (!string.IsNullOrEmpty(searchProjectsRequest.LocaleId))
-            request.AddQueryParameter("localeId", searchProjectsRequest.LocaleId);
+        if (!string.IsNullOrEmpty(searchProjectsRequest.Name))
+            filters.Add(new("projects(name)", "like", searchProjectsRequest.Name));
 
-        var response = await Client.Paginate<ProjectDto>(request);
-        return new(response);
+        projectsRequest.AddBody(new
+        {
+            @operator = "and",
+            filters
+        });
+        var response = await Client.Paginate<ProjectGroupDto>(projectsRequest);
+        return new(response.SelectMany(x => x.Projects).Where(x => x.Name.Contains(searchProjectsRequest.Name)));
     }
 
     [Action("Get project", Description = "Get project")]
