@@ -26,12 +26,16 @@ public class ProjectGroupActions : WorldserverInvocable
     public async Task<SearchProjectGroupsResponse> SearchProjectGroups([ActionParameter] SearchProjectGroupsRequest searchProjectGroupsRequest)
     {
         var request = new WorldserverRequest($"/v2/projectGroups/search", Method.Post);
-        var filters = new List<FieldFilterV2Dto>();
+        var filters = new List<FieldFilterV1Dto>();
 
         if (!string.IsNullOrEmpty(searchProjectGroupsRequest.Name))
-            filters.Add(new("name", "TEXT", searchProjectGroupsRequest.Name));
+            filters.Add(new("name", "like", searchProjectGroupsRequest.Name));
 
-        request.AddBody(filters);
+        request.AddBody(new 
+        {
+            @operator = "and",
+            filters
+        });
         var response = await Client.Paginate<ProjectGroupDto>(request);
         return new(response);
     }

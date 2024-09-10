@@ -29,7 +29,7 @@ public class ProjectGroupDto
     public int TotalTcrTasks { get; set; }
     public Client Client { get; set; }
     public ProjectTypeDto ProjectType { get; set; }
-    public List<Project> Projects { get; set; }
+    public List<ProjectDto> Projects { get; set; }
     public int TotalProjects { get; set; }
     public int CanceledTasks { get; set; }
     public int CompletedTasks { get; set; }

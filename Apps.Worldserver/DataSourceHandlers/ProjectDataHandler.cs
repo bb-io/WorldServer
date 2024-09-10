@@ -15,9 +15,19 @@ public class ProjectDataHandler : WorldserverInvocable, IAsyncDataSourceHandler
 
     public async Task<Dictionary<string, string>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
     {
-        var projectsRequest = new WorldserverRequest("/v2/projects", Method.Get);
-        var projects = await Client.Paginate<ProjectDto>(projectsRequest);
-        return projects
+        var projectsRequest = new WorldserverRequest("/v2/projectGroups/search", Method.Post);
+        var filters = new List<FieldFilterV1Dto>();
+
+        if (!string.IsNullOrEmpty(context.SearchString))
+            filters.Add(new("projects(name)", "like", context.SearchString));
+
+        projectsRequest.AddBody(new
+        {
+            @operator = "and",
+            filters
+        });
+        var projects = await Client.Paginate<ProjectGroupDto>(projectsRequest);
+        return projects.SelectMany(x => x.Projects)
             .Where(str => context.SearchString is null || str.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
             .Take(50)
             .ToDictionary(k => k.Id.ToString(), v => v.Name);
