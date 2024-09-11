@@ -167,7 +167,6 @@ public class TaskActions : WorldserverInvocable
             tdFilterId = exportTaskRequest.TdFilterId,
             tmFilterId = exportTaskRequest.TmFilterId
         }, JsonConfig.Settings));
-        var startExportResponse1 = await Client.ExecuteAsync(startExportRequest);
         var startExportResponse = await Client.ExecuteWithErrorHandling<ExportStartDto>(startExportRequest);
 
         var pollExportStatusRequest = new WorldserverRequest($"/v2/jobs/{startExportResponse.Response.Id}", Method.Get);
@@ -190,6 +189,29 @@ public class TaskActions : WorldserverInvocable
         var contentDisposition = ContentDispositionHeaderValue.Parse(downloadExportedTaskResponse.ContentHeaders.First(x => x.Name == "Content-Disposition").Value.ToString());
         var file = await _fileManagementClient.UploadAsync(stream, MediaTypeNames.Application.Octet, contentDisposition.FileNameStar);
         return file;
+    }
+
+    [Action("Import task", Description = "Import task")]
+    public async Task ImportTask([ActionParameter] ImportTaskRequest importTaskRequest)
+    {
+        var fileActions = new FileActions(InvocationContext, _fileManagementClient);
+        var uploadedAsset = await fileActions.UploadFileWithCustomForm(importTaskRequest.File);
+
+        var startImportRequest = new WorldserverRequest($"/v2/tasks/import", Method.Post);
+        startImportRequest.AddBody(new
+        {
+            file = uploadedAsset.InternalName,
+            updateTM = importTaskRequest.UpdateTm ?? true
+        });
+        var startImportResponse = await Client.ExecuteWithErrorHandling<ExportStartDto>(startImportRequest);
+
+        var pollImportStatusRequest = new WorldserverRequest($"/v2/jobs/{startImportResponse.Response.Id}", Method.Get);
+        var pollImportStatusResponse = await Client.ExecuteWithErrorHandling<JobDto>(pollImportStatusRequest);
+        while (pollImportStatusResponse.Status == "STILL_IN_PROGRESS" || pollImportStatusResponse.Status == "NOT_STARTED")
+        {
+            await Task.Delay(1000);
+            pollImportStatusResponse = await Client.ExecuteWithErrorHandling<JobDto>(pollImportStatusRequest);
+        }
     }
 
     private async Task<FileReference> UnzipFile(byte[] zippedFile)
