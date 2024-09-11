@@ -7,11 +7,9 @@ public class ExportTaskTypeDataHandler : IStaticDataSourceHandler
     {
         return new()
         {
-            {"UNKNOWN", "Unknown" },
             {"WSXZ", "WSXZ" },
             {"BDX", "BDX" },
             {"XLIFF", "XLIFF" },
-            {"REGULATOR_BUNDLE", "Regulator bundle" },
             {"XLZ", "XLZ" },
         };
     }

@@ -9,9 +9,11 @@ using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
+using Blackbird.Applications.Sdk.Utils.Extensions.Files;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using Newtonsoft.Json;
 using RestSharp;
+using System.IO;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 
@@ -151,16 +153,21 @@ public class TaskActions : WorldserverInvocable
         [ActionParameter] ExportTaskRequest exportTaskRequest)
     {
         var startExportRequest = new WorldserverRequest($"/v2/tasks/export", Method.Post);
+
+        var zippedFileTypes = new[] { "XLIFF", "BDX" };
+        var ignoreAllowSplitAndMerge = new[] { "BDX" }.Contains(exportTaskRequest.Type);
+
         startExportRequest.AddJsonBody(JsonConvert.SerializeObject(new
         {
             ids = new[] { int.Parse(taskRequest.TaskId) },
             type = exportTaskRequest.Type,
-            allowSplitAndMerge = exportTaskRequest.AllowSplitAndMerge,
+            allowSplitAndMerge = ignoreAllowSplitAndMerge ? (bool?)null : (exportTaskRequest.AllowSplitAndMerge ?? false),
             tmInfo = exportTaskRequest.TMInfo,
-            segmentExclusion = exportTaskRequest.SegmentExclusion,
+            segmentExclusion = exportTaskRequest.SegmentExclusion ?? "NONE",
             tdFilterId = exportTaskRequest.TdFilterId,
             tmFilterId = exportTaskRequest.TmFilterId
         }, JsonConfig.Settings));
+        var startExportResponse1 = await Client.ExecuteAsync(startExportRequest);
         var startExportResponse = await Client.ExecuteWithErrorHandling<ExportStartDto>(startExportRequest);
 
         var pollExportStatusRequest = new WorldserverRequest($"/v2/jobs/{startExportResponse.Response.Id}", Method.Get);
@@ -176,9 +183,20 @@ public class TaskActions : WorldserverInvocable
         downloadExportedTaskRequest.AddHeader("Accept", "*/*");
         var downloadExportedTaskResponse = await Client.ExecuteAsync(downloadExportedTaskRequest);
 
+        if (zippedFileTypes.Contains(exportTaskRequest.Type))
+            return await UnzipFile(downloadExportedTaskResponse.RawBytes);
+
         using var stream = new MemoryStream(downloadExportedTaskResponse.RawBytes);
         var contentDisposition = ContentDispositionHeaderValue.Parse(downloadExportedTaskResponse.ContentHeaders.First(x => x.Name == "Content-Disposition").Value.ToString());
-        var file = await _fileManagementClient.UploadAsync(stream, MediaTypeNames.Text.Html, contentDisposition.FileNameStar);
+        var file = await _fileManagementClient.UploadAsync(stream, MediaTypeNames.Application.Octet, contentDisposition.FileNameStar);
+        return file;
+    }
+
+    private async Task<FileReference> UnzipFile(byte[] zippedFile)
+    {
+        using var fileSteaam = new MemoryStream(zippedFile);
+        var files = await fileSteaam.GetFilesFromZip();
+        var file = await _fileManagementClient.UploadAsync(files.First().FileStream, MediaTypeNames.Application.Octet, files.First().UploadName);
         return file;
     }
 }
