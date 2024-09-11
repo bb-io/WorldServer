@@ -151,7 +151,7 @@ public class TaskActions : WorldserverInvocable
         [ActionParameter] ExportTaskRequest exportTaskRequest)
     {
         var startExportRequest = new WorldserverRequest($"/v2/tasks/export", Method.Post);
-        startExportRequest.AddBody(new
+        startExportRequest.AddJsonBody(JsonConvert.SerializeObject(new
         {
             ids = new[] { int.Parse(taskRequest.TaskId) },
             type = exportTaskRequest.Type,
@@ -160,7 +160,7 @@ public class TaskActions : WorldserverInvocable
             segmentExclusion = exportTaskRequest.SegmentExclusion,
             tdFilterId = exportTaskRequest.TdFilterId,
             tmFilterId = exportTaskRequest.TmFilterId
-        });
+        }, JsonConfig.Settings));
         var startExportResponse = await Client.ExecuteWithErrorHandling<ExportStartDto>(startExportRequest);
 
         var pollExportStatusRequest = new WorldserverRequest($"/v2/jobs/{startExportResponse.Response.Id}", Method.Get);
@@ -171,8 +171,10 @@ public class TaskActions : WorldserverInvocable
             pollExportStatusResponse = await Client.ExecuteWithErrorHandling<JobDto>(pollExportStatusRequest);
         }
 
-        var downloadExportedTaskRequest = new RestRequest(pollExportStatusResponse.Links.First().Href, Method.Get);
-        var downloadExportedTaskResponse = await new RestClient().ExecuteAsync(downloadExportedTaskRequest);
+        var fileLink = pollExportStatusResponse.Links.First().Href.Split("ws-api")[1];
+        var downloadExportedTaskRequest = new WorldserverRequest(fileLink, Method.Get);
+        downloadExportedTaskRequest.AddHeader("Accept", "*/*");
+        var downloadExportedTaskResponse = await Client.ExecuteAsync(downloadExportedTaskRequest);
 
         using var stream = new MemoryStream(downloadExportedTaskResponse.RawBytes);
         var contentDisposition = ContentDispositionHeaderValue.Parse(downloadExportedTaskResponse.ContentHeaders.First(x => x.Name == "Content-Disposition").Value.ToString());
