@@ -12,12 +12,24 @@ public class ConnectionValidator : IConnectionValidator
         IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
         CancellationToken cancellationToken)
     {
-        var request = new WorldserverRequest($"/projects", Method.Get);
-        request.AddQueryParameter("limit", 1);
-        var response = await new WorldserverClient(authenticationCredentialsProviders).ExecuteWithErrorHandling<CollectionResponseDto<ProjectDto>>(request);
-        return new()
+        try
         {
-            IsValid = true
-        };
+            var request = new WorldserverRequest($"/v2/projects", Method.Get);
+            request.AddQueryParameter("limit", 1);
+            var response = await new WorldserverClient(authenticationCredentialsProviders).ExecuteWithErrorHandling<CollectionResponseDto<ProjectDto>>(request);
+            return new()
+            {
+                IsValid = true
+            };
+        }
+        catch (Exception ex)
+        {
+            return new()
+            {
+                IsValid = false,
+                Message = ex.Message
+            };
+        }
+        
     }
 }
