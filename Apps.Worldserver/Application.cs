@@ -8,7 +8,7 @@ public class Application : IApplication, ICategoryProvider
 {
     public IEnumerable<ApplicationCategory> Categories
     {
-        get => [ApplicationCategory.Cms];
+        get => [ApplicationCategory.CatAndTms];
         set { }
     }
 
