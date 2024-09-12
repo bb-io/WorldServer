@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Product>WorldServer [Beta]</Product>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Description>WorldServer is a flexible, enterprise-class translation management system that automates translation tasks and greatly reduces the cost of supporting large volumes of local language content.</Description>
     <AssemblyName>Apps.Worldserver</AssemblyName>
   </PropertyGroup>
