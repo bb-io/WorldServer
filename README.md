@@ -6,7 +6,53 @@ Blackbird is the new automation backbone for the language technology industry. B
 
 <!-- begin docs -->
 
-Documentation coming soon.
+WorldServer is an enterprise translation management system (TMS) developed by RWS. It is designed to streamline and manage the localization and translation processes of large-scale projects. WorldServer enables organizations to automate translation workflows, manage translation memory and terminology, and collaborate with multiple translation providers.
+
+## Connecting
+
+1. Navigate to Apps, and identify the **WorldServer** app. You can use search to find it.
+2. Click _Add Connection_.
+3. Name your connection for future reference e.g. 'My WorldServer connection'.
+4. Fill in the necessary fields: 
+	- Instance URL
+	- Username
+	- Password
+5. Click **Connect**.
+6. Make sure that connection was added successfully.
+
+![connection](./image/README/connecting.png)
+
+## Actions
+
+### Tasks
+
+- **Search tasks** Search tasks
+- **Assign task** Assign task
+- **Claim task** Claim task
+- **Complete task step** Complete task step
+- **Export task** Export task
+- **Get task** Get task
+- **Import task** Import task
+- **Unclaim task** Unclaim task
+- **Update task** Update task
+
+### Projects
+
+- **Complete project step** Complete project step
+- **Get project** Get project
+- **Search projects** Search projects
+- **Update project** Update project
+
+### Project groups
+
+- **Create project group** Create project group
+- **Get project group** Get project group
+- **Search project groups** Search project groups
+
+### Files
+
+- **Download file** Download task file
+- **Upload file** Upload file
 
 ## Feedback
 
