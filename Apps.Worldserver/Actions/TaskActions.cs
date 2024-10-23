@@ -36,7 +36,7 @@ public class TaskActions : WorldserverInvocable
         var filters = new List<FieldFilterV1Dto>();
         if (!string.IsNullOrEmpty(searchTasksRequest.ProjectId))
             filters.Add(new("project.id", "eq", searchTasksRequest.ProjectId));
-        if (!string.IsNullOrEmpty(searchTasksRequest.ProjectId))
+        if (!string.IsNullOrEmpty(searchTasksRequest.AssetName))
             filters.Add(new("assets", "like", $"%{searchTasksRequest.AssetName}%"));
 
         request.AddBody(new
