@@ -34,7 +34,6 @@ public class ProjectDto
     public string Status { get; set; }
     public Client Client { get; set; }
     public ProjectTypeDto ProjectType { get; set; }
-    public ScopingConfiguration ScopingConfiguration { get; set; }
 }
 
 public class Assignee

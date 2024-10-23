@@ -36,7 +36,11 @@ public class ProjectActions : WorldserverInvocable
             filters
         });
         var response = await Client.Paginate<ProjectGroupDto>(projectsRequest);
-        return new(response.SelectMany(x => x.Projects).Where(x => x.Name.Contains(searchProjectsRequest.Name)));
+        return new(response.SelectMany(x => x.Projects)
+            .Where(x => 
+                string.IsNullOrEmpty(searchProjectsRequest?.Name) ||
+                x.Name.Contains(searchProjectsRequest.Name, StringComparison.OrdinalIgnoreCase))
+            );
     }
 
     [Action("Get project", Description = "Get project")]
