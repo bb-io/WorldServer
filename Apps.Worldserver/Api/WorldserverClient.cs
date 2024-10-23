@@ -5,6 +5,7 @@ using Blackbird.Applications.Sdk.Utils.Extensions.String;
 using Blackbird.Applications.Sdk.Utils.RestSharp;
 using Newtonsoft.Json;
 using RestSharp;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Apps.Worldserver.Api;
 
@@ -69,5 +70,26 @@ public class WorldserverClient : BlackBirdRestClient
             password
         });
         return this.Execute<AuthResponseDto>(request).Data.SessionId;
+    }
+
+    public override async Task<RestResponse> ExecuteWithErrorHandling(RestRequest request)
+    {
+        RestResponse restResponse = await ExecuteAsync(request);
+        if (!restResponse.IsSuccessStatusCode)
+        {
+            throw ConfigureErrorException(restResponse);
+        }
+
+        var errorsWrapper = JsonConvert.DeserializeObject<WorldserverErrorWrapper>(restResponse.Content!)!;
+        if (errorsWrapper?.Status == "ERROR" && 
+            errorsWrapper.Response != null && 
+            errorsWrapper.Response.Any() && 
+            errorsWrapper.Response.First().Errors != null && 
+            errorsWrapper.Response.First().Errors.Any())
+        {
+            var firstError = errorsWrapper.Response.First().Errors.First();
+            throw new Exception($"Error type: {firstError.Type}.\nMessage: {firstError.Message}");
+        }
+        return restResponse;
     }
 }
