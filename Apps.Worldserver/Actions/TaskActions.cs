@@ -180,7 +180,7 @@ public class TaskActions : WorldserverInvocable
         var fileLink = pollExportStatusResponse.Links.First().Href.Split("ws-api")[1];
         var downloadExportedTaskRequest = new WorldserverRequest(fileLink, Method.Get);
         downloadExportedTaskRequest.AddHeader("Accept", "*/*");
-        var downloadExportedTaskResponse = await Client.ExecuteAsync(downloadExportedTaskRequest);
+        var downloadExportedTaskResponse = await Client.ExecuteWithErrorHandling(downloadExportedTaskRequest);
 
         if (zippedFileTypes.Contains(exportTaskRequest.Type))
             return await UnzipFile(downloadExportedTaskResponse.RawBytes);
