@@ -142,7 +142,7 @@ public class TaskActions : WorldserverInvocable
             {
                 id = int.Parse(taskRequest.TaskId),
                 transitionId = int.Parse(completeStepRequest.TransitionId),
-                commnet = completeStepRequest.Comment
+                comment = completeStepRequest.Comment
             }
         }, JsonConfig.Settings));
         await Client.ExecuteWithErrorHandling(request);

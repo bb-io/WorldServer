@@ -49,7 +49,7 @@ public class ProjectGroupActions : WorldserverInvocable
     }
 
     [Action("Create project group", Description = "Create project group")]
-    public async Task<int> CreateProjectGroup(
+    public async Task<ProjectGroupIdDto> CreateProjectGroup(
         [ActionParameter] GetClientRequest clientRequest,
         [ActionParameter] CreateProjectGroupRequest projectGroupRequest)
     {
@@ -78,7 +78,7 @@ public class ProjectGroupActions : WorldserverInvocable
         request.AddBody(new[] { createProjectGroupDto });
         var result = await Client.ExecuteWithErrorHandling<CreateProjectGroupResponse>(request);
         if (result.Response.Any() && result.Response.First().Response.HasValue)
-            return result.Response.First().Response.Value;
+            return new() { ProjectGroupId = result.Response.First().Response.Value };
         else if(result.Response.Any() && result.Response.First().Warnings != null && result.Response.First().Warnings.Any())
             throw new ArgumentException(result.Response.First().Warnings.First().Message);
         throw new ArgumentException("Unknown error");
