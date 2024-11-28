@@ -67,7 +67,7 @@ public class ProjectGroupDto
     [Display("Total task issues")]
     public int TotalTaskIssues { get; set; }
 
-    [Display("Total tcr tasks")]
+    [Display("Total TCR tasks")]
     public int TotalTcrTasks { get; set; }
     public Client Client { get; set; }
 
