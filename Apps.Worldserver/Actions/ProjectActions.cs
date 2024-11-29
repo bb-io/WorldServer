@@ -10,7 +10,6 @@ using Newtonsoft.Json;
 using Apps.Worldserver.Constants;
 using Apps.Worldserver.Dto.UpdateDto;
 using Apps.Worldserver.Dto;
-using System.Linq;
 
 namespace Apps.Worldserver.Actions;
 
@@ -51,6 +50,7 @@ public class ProjectActions : WorldserverInvocable
         return response;
     }
 
+    // Request method 'PATCH' not supported !!!!
     [Action("Update project", Description = "Update project")]
     public async Task UpdateProject([ActionParameter] GetProjectRequest projectRequest,
         [ActionParameter] UpdateProjectRequest updateRequest)
@@ -75,7 +75,7 @@ public class ProjectActions : WorldserverInvocable
         if (!string.IsNullOrEmpty(updateRequest.QualityModelId))
             updateDto.QualityModel = new() { Id = int.Parse(updateRequest.QualityModelId) };
 
-        var request = new WorldserverRequest($"/v2/projects/{projectRequest.ProjectId}", Method.Patch);
+        var request = new WorldserverRequest($"/v2/projects/{projectRequest.ProjectId}", Method.Patch);  // Request method 'PATCH' not supported !!!! Issue on side of Worldserver
         request.AddJsonBody(JsonConvert.SerializeObject(new[] { updateDto }, JsonConfig.Settings));
         await Client.ExecuteWithErrorHandling(request);
     }

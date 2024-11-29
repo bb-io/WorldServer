@@ -7,6 +7,7 @@ using Apps.Worldserver.Models.Tasks.Request;
 using Apps.Worldserver.Models.Tasks.Response;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.Sdk.Utils.Extensions.Files;
@@ -176,6 +177,8 @@ public class TaskActions : WorldserverInvocable
             await Task.Delay(1000);
             pollExportStatusResponse = await Client.ExecuteWithErrorHandling<JobDto>(pollExportStatusRequest);
         }
+        if (pollExportStatusResponse.Status == "FAILED")
+            throw new PluginMisconfigurationException("Export task process failed");
 
         var fileLink = pollExportStatusResponse.Links.First().Href.Split("ws-api")[1];
         var downloadExportedTaskRequest = new WorldserverRequest(fileLink, Method.Get);
