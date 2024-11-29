@@ -25,6 +25,9 @@ public class TaskStepTransitionDataHandler : WorldserverInvocable, IAsyncDataSou
         var request = new WorldserverRequest($"/v2/tasks/{TaskRequest.TaskId}", Method.Get);
         var response = await Client.ExecuteWithErrorHandling<TaskDto>(request);
 
+        if(response?.CurrentTaskStep?.WorkflowTransitions == null || !response.CurrentTaskStep.WorkflowTransitions.Any())
+            throw new ArgumentException("No available transitions for selected task!");
+
         return response.CurrentTaskStep.WorkflowTransitions
            .Where(str => context.SearchString is null || str.Text.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
            .Take(50)

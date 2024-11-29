@@ -1,6 +1,7 @@
 using Apps.Worldserver.Constants;
 using Apps.Worldserver.Dto;
 using Blackbird.Applications.Sdk.Common.Authentication;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Utils.Extensions.String;
 using Blackbird.Applications.Sdk.Utils.RestSharp;
 using Newtonsoft.Json;
@@ -80,16 +81,21 @@ public class WorldserverClient : BlackBirdRestClient
             throw ConfigureErrorException(restResponse);
         }
 
-        var errorsWrapper = JsonConvert.DeserializeObject<WorldserverErrorWrapper>(restResponse.Content!)!;
-        if (errorsWrapper?.Status == "ERROR" && 
-            errorsWrapper.Response != null && 
-            errorsWrapper.Response.Any() && 
-            errorsWrapper.Response.First().Errors != null && 
-            errorsWrapper.Response.First().Errors.Any())
+        try
         {
-            var firstError = errorsWrapper.Response.First().Errors.First();
-            throw new Exception($"Error type: {firstError.Type}.\nMessage: {firstError.Message}");
+            var errorsWrapper = JsonConvert.DeserializeObject<WorldserverErrorWrapper>(restResponse.Content!)!;
+            if (errorsWrapper?.Status == "ERROR" &&
+                errorsWrapper.Response != null &&
+                errorsWrapper.Response.Any() &&
+                errorsWrapper.Response.First().Errors != null &&
+                errorsWrapper.Response.First().Errors.Any())
+            {
+                var firstError = errorsWrapper.Response.First().Errors.First();
+                throw new PluginMisconfigurationException($"Error type: {firstError.Type}.\nMessage: {firstError.Message}");
+            }
         }
+        catch (Exception ex){}
+        
         return restResponse;
     }
 }
