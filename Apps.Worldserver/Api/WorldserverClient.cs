@@ -84,7 +84,14 @@ public class WorldserverClient : BlackBirdRestClient
         try
         {
             var errorsWrapper = JsonConvert.DeserializeObject<WorldserverErrorWrapper>(restResponse.Content!)!;
-            if (errorsWrapper?.Status == "ERROR" &&
+            if (errorsWrapper?.Status == "ERROR" && 
+                errorsWrapper.Errors != null && 
+                errorsWrapper.Errors.Any())
+            {
+                var firstError = errorsWrapper.Errors.First();
+                throw new PluginMisconfigurationException($"Error type: {firstError.Type}.\nMessage: {firstError.Message}");
+            }
+            else if (errorsWrapper?.Status == "ERROR" &&
                 errorsWrapper.Response != null &&
                 errorsWrapper.Response.Any() &&
                 errorsWrapper.Response.First().Errors != null &&
@@ -92,7 +99,11 @@ public class WorldserverClient : BlackBirdRestClient
             {
                 var firstError = errorsWrapper.Response.First().Errors.First();
                 throw new PluginMisconfigurationException($"Error type: {firstError.Type}.\nMessage: {firstError.Message}");
-            }
+            }           
+        }
+        catch(PluginMisconfigurationException ex)
+        {
+            throw;
         }
         catch (Exception ex){}
         

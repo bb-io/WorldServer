@@ -10,4 +10,6 @@ public class WorldserverErrorWrapper
     public string Status { get; set; }
 
     public IEnumerable<WorldserverError> Response { get; set; }
+
+    public IEnumerable<ErrorDto> Errors { get; set; }
 }
