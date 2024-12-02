@@ -83,6 +83,7 @@ public class WorldserverClient : BlackBirdRestClient
 
         try
         {
+            Console.WriteLine("Raw Response: " + restResponse.Content);
             var errorsWrapper = JsonConvert.DeserializeObject<WorldserverErrorWrapper>(restResponse.Content!)!;
             if (errorsWrapper?.Status == "ERROR" && 
                 errorsWrapper.Errors != null && 

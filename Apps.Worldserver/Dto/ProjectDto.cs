@@ -102,6 +102,7 @@ public class Client
 
 public class Creator
 {
+
     public int Id { get; set; }
     public string Username { get; set; }
 
