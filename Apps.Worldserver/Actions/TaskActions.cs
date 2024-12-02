@@ -224,4 +224,67 @@ public class TaskActions : WorldserverInvocable
         var file = await _fileManagementClient.UploadAsync(files.First().FileStream, MediaTypeNames.Application.Octet, files.First().UploadName);
         return file;
     }
+
+
+
+    [Action("Export all project tasks", Description = "Export all tasks from a project into a single file")]
+    public async Task<FileReference> ExportAllProjectTasksAsZip([ActionParameter] ProjectIdRequest projectIdRequest,
+    [ActionParameter] ExportTaskRequest exportTaskRequest)
+    {           
+        var searchRequest = new WorldserverRequest($"/v2/tasks/search", Method.Post);
+        searchRequest.AddBody(new
+        {
+            @operator = "and",
+            filters = new List<FieldFilterV1Dto>
+        {
+            new("project.id", "eq", projectIdRequest.ProjectId)
+        }
+        });
+
+        var tasks = await Client.Paginate<TaskDto>(searchRequest);
+        if (!tasks.Any())
+        {
+            throw new PluginMisconfigurationException("No tasks found in the specified project.");
+        }
+
+        var taskIds = tasks.Select(task => task.Id).ToArray();
+
+        var exportRequest = new WorldserverRequest($"/v2/tasks/export", Method.Post);
+        exportRequest.AddJsonBody(new
+        {
+            ids = taskIds,
+            type = exportTaskRequest.Type,
+            allowSplitAndMerge = exportTaskRequest.AllowSplitAndMerge ?? false,
+            tmInfo = exportTaskRequest.TMInfo ?? "CONTENT_AND_LINK",
+            segmentExclusion = exportTaskRequest.SegmentExclusion ?? "NONE",
+            tdFilterId = exportTaskRequest.TdFilterId,
+            tmFilterId = exportTaskRequest.TmFilterId
+        });
+
+        var exportResponse = await Client.ExecuteWithErrorHandling<ExportStartDto>(exportRequest);
+        var pollExportStatusRequest = new WorldserverRequest($"/v2/jobs/{exportResponse.Response.Id}", Method.Get);
+
+        JobDto exportStatusResponse;
+        do
+        {
+            await Task.Delay(1000);
+            exportStatusResponse = await Client.ExecuteWithErrorHandling<JobDto>(pollExportStatusRequest);
+        } while (exportStatusResponse.Status == "STILL_IN_PROGRESS" || exportStatusResponse.Status == "NOT_STARTED");
+
+        if (exportStatusResponse.Status == "FAILED")
+        {
+            throw new PluginMisconfigurationException("Failed to export tasks.");
+        }
+
+        var fileLink = exportStatusResponse.Links.First().Href.Split("ws-api")[1];
+        var downloadRequest = new WorldserverRequest(fileLink, Method.Get);
+        downloadRequest.AddHeader("Accept", "*/*");
+
+        var downloadResponse = await Client.ExecuteWithErrorHandling(downloadRequest);
+        using var zipStream = new MemoryStream(downloadResponse.RawBytes);
+
+        var uploadedFile = await _fileManagementClient.UploadAsync(zipStream, MediaTypeNames.Application.Zip, "ProjectTasks.zip");
+        return uploadedFile;
+    }
+
 }
