@@ -16,9 +16,5 @@ namespace Apps.Worldserver.Models.Tasks.Request
         [Display("Segment exclusion")]
         [StaticDataSource(typeof(ExportTaskSegmentationDataHandler))]
         public string? SegmentExclusion { get; set; }
-
-        [JsonIgnore]
-        public string FileName {  get; set; }
-
     }
 }

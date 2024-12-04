@@ -241,7 +241,7 @@ public class TaskActions : WorldserverInvocable
         var fileName = $"{projectDetails.Name}_{projectDetails.Id}_Tasks";
         exportTaskRequest.FileName = fileName;
 
-        return await ExportTasksAsZip(taskIds.ToArray(), exportTaskRequest);
+        return await ExportTasksAsZip(taskIds.ToArray(), exportTaskRequest, fileName);
     }
 
     private async Task<(string Name, string Id)> GetProjectDetailsById(string projectId)
@@ -284,7 +284,7 @@ public class TaskActions : WorldserverInvocable
     }
 
 
-    public async Task<FileReference> ExportTasksAsZip(string[] taskIds, ExportAllTasksRequest exportTaskRequest)
+    public async Task<FileReference> ExportTasksAsZip(string[] taskIds, ExportAllTasksRequest exportTaskRequest, string fileName)
     {
         try
         {
