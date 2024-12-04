@@ -232,18 +232,38 @@ public class TaskActions : WorldserverInvocable
         [ActionParameter] ProjectIdRequest projectIdRequest,
         [ActionParameter] ExportAllTasksRequest exportTaskRequest)
     {
-        //change file reference
         var taskIds = await GetTaskIdsByProject(projectIdRequest.ProjectId);
 
         if (!taskIds.Any())
             throw new PluginMisconfigurationException("No tasks found in the specified project.");
 
+        var projectDetails = await GetProjectDetailsById(projectIdRequest.ProjectId);
+        var fileName = $"{projectDetails.Name}_{projectDetails.Id}_Tasks";
+        exportTaskRequest.FileName = fileName;
+
         return await ExportTasksAsZip(taskIds.ToArray(), exportTaskRequest);
     }
 
+    private async Task<(string Name, string Id)> GetProjectDetailsById(string projectId)
+    {
+        try
+        {
+            var request = new WorldserverRequest($"/v2/projects/{projectId}", Method.Get);
+            request.AddQueryParameter("fields", "id,name");
+            var response = await Client.ExecuteWithErrorHandling<ProjectIdDto>(request);
 
+            if (response == null || string.IsNullOrEmpty(response.Name) || string.IsNullOrEmpty(response.Id))
+                throw new PluginMisconfigurationException("Project details could not be retrieved.");
 
-    public async Task<List<int>> GetTaskIdsByProject(string projectId)
+            return (response.Name, response.Id);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Error retrieving project details: " + ex.Message);
+        }
+    }
+
+    public async Task<List<string>> GetTaskIdsByProject(string projectId)
     {
         try
         {
@@ -264,7 +284,7 @@ public class TaskActions : WorldserverInvocable
     }
 
 
-    public async Task<FileReference> ExportTasksAsZip(int[] taskIds, ExportAllTasksRequest exportTaskRequest)
+    public async Task<FileReference> ExportTasksAsZip(string[] taskIds, ExportAllTasksRequest exportTaskRequest)
     {
         try
         {
@@ -279,8 +299,6 @@ public class TaskActions : WorldserverInvocable
 
             var exportResponse = await Client.ExecuteAsync(exportRequest);
             var exportResponseJson = JsonConvert.DeserializeObject<ExportResponse>(exportResponse.Content);
-
-            Console.WriteLine("Raw Response: " + exportResponse.Content);
 
             if (!exportResponse.IsSuccessful)
             {
@@ -325,7 +343,7 @@ public class TaskActions : WorldserverInvocable
             var uploadedFile = await _fileManagementClient.UploadAsync(
                 zipStream,
                 MediaTypeNames.Application.Zip,
-                "ProjectTasks.zip");
+                $"{exportTaskRequest.FileName}.zip");
 
             return uploadedFile;
         }

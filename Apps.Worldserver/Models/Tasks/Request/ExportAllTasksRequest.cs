@@ -1,4 +1,5 @@
-﻿using Apps.Worldserver.DataSourceHandlers.Enum;
+﻿using System.Text.Json.Serialization;
+using Apps.Worldserver.DataSourceHandlers.Enum;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Dictionaries;
 
@@ -15,5 +16,9 @@ namespace Apps.Worldserver.Models.Tasks.Request
         [Display("Segment exclusion")]
         [StaticDataSource(typeof(ExportTaskSegmentationDataHandler))]
         public string? SegmentExclusion { get; set; }
+
+        [JsonIgnore]
+        public string FileName {  get; set; }
+
     }
 }

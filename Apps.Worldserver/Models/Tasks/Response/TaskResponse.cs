@@ -15,13 +15,13 @@ namespace Apps.Worldserver.Models.Tasks.Response
         public List<TaskItem> Items { get; set; }
 
         [JsonProperty("total")]
-        public int Total { get; set; }
+        public string Total { get; set; }
     }
 
     public class TaskItem
     {
         [JsonProperty("id")]
-        public int Id { get; set; }
+        public string Id { get; set; }
 
         [JsonProperty("project")]
         public Project Project { get; set; }
@@ -30,7 +30,7 @@ namespace Apps.Worldserver.Models.Tasks.Response
     public class Project
     {
         [JsonProperty("id")]
-        public int Id { get; set; }
+        public string Id { get; set; }
 
         [JsonProperty("name")]
         public string Name { get; set; }
@@ -51,7 +51,7 @@ namespace Apps.Worldserver.Models.Tasks.Response
     public class ExportResponseData
     {
         [JsonProperty("id")]
-        public int Id { get; set; }
+        public string Id { get; set; }
 
         [JsonProperty("name")]
         public string Name { get; set; }
