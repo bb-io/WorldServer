@@ -239,7 +239,6 @@ public class TaskActions : WorldserverInvocable
 
         var projectDetails = await GetProjectDetailsById(projectIdRequest.ProjectId);
         var fileName = $"{projectDetails.Name}_{projectDetails.Id}_Tasks";
-        exportTaskRequest.FileName = fileName;
 
         return await ExportTasksAsZip(taskIds.ToArray(), exportTaskRequest, fileName);
     }
@@ -343,7 +342,7 @@ public class TaskActions : WorldserverInvocable
             var uploadedFile = await _fileManagementClient.UploadAsync(
                 zipStream,
                 MediaTypeNames.Application.Zip,
-                $"{exportTaskRequest.FileName}.zip");
+                $"{fileName}.zip");
 
             return uploadedFile;
         }
