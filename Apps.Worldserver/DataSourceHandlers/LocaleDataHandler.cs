@@ -9,7 +9,7 @@ using RestSharp;
 
 namespace Apps.Worldserver.DataSourceHandlers;
 
-public class LocaleDataHandler : WorldserverInvocable, IAsyncDataSourceHandler
+public class LocaleDataHandler : WorldserverInvocable, IAsyncDataSourceItemHandler
 {
     public CreateProjectGroupRequest CreateProjectGroupRequest { get; set; }
 
@@ -19,10 +19,10 @@ public class LocaleDataHandler : WorldserverInvocable, IAsyncDataSourceHandler
         CreateProjectGroupRequest = createProjectGroupRequest;
     }
 
-    public async Task<Dictionary<string, string>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
+    public async Task<IEnumerable<DataSourceItem>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
     {
         if (CreateProjectGroupRequest?.ProjectTypeId == null)
-            throw new ArgumentException("Please specify project type ID firsd");
+            throw new ArgumentException("Please specify project type ID first");
 
         var localeRequest = new WorldserverRequest("/v2/locales", Method.Get);
         var locales = await Client.Paginate<LocaleDto>(localeRequest);
@@ -30,9 +30,9 @@ public class LocaleDataHandler : WorldserverInvocable, IAsyncDataSourceHandler
         var projectTypeRequest = new WorldserverRequest($"/v2/projectTypes/{CreateProjectGroupRequest.ProjectTypeId}", Method.Get);
         var projectType = await Client.ExecuteWithErrorHandling<ProjectTypeDto>(projectTypeRequest);
 
-        return locales
-            .Where(x => x.Id != projectType.SourceLocale.Id)
-            .Where(str => context.SearchString is null || str.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
-            .ToDictionary(k => k.Id.ToString(), v => v.Name);
+        return locales.Where(locale => locale.Id != projectType.SourceLocale.Id)
+            .Where(locale => string.IsNullOrWhiteSpace(context.SearchString) ||
+            locale.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
+            .Select(locale=> new DataSourceItem(locale.Id.ToString(), locale.Name));
     }
 }

@@ -7,19 +7,20 @@ using RestSharp;
 
 namespace Apps.Worldserver.DataSourceHandlers;
 
-public class CostModelDataHandler : WorldserverInvocable, IAsyncDataSourceHandler
+public class CostModelDataHandler : WorldserverInvocable, IAsyncDataSourceItemHandler
 {
     public CostModelDataHandler(InvocationContext invocationContext) : base(invocationContext)
     {
     }
 
-    public async Task<Dictionary<string, string>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
+    public async Task<IEnumerable<DataSourceItem>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
     {
         var costModelRequest = new WorldserverRequest("/v2/costModels", Method.Get);
         var costModels = await Client.ExecuteWithErrorHandling<CollectionResponseDto<CostModelDto>>(costModelRequest);
-        return costModels.Items
-            .Where(str => context.SearchString is null || str.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
+
+        return costModels.Items.Where(costModel => string.IsNullOrWhiteSpace(context.SearchString) ||
+            costModel.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
             .Take(50)
-            .ToDictionary(k => k.Id.ToString(), v => v.Name);
+            .Select(costModel => new DataSourceItem(costModel.Id.ToString(), costModel.Name));
     }
 }

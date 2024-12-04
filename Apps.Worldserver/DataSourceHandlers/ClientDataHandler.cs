@@ -6,20 +6,22 @@ using Blackbird.Applications.Sdk.Common.Invocation;
 using RestSharp;
 
 namespace Apps.Worldserver.DataSourceHandlers;
-public class ClientDataHandler : WorldserverInvocable, IAsyncDataSourceHandler
+public class ClientDataHandler : WorldserverInvocable, IAsyncDataSourceItemHandler
 {
     public ClientDataHandler(InvocationContext invocationContext) : base(invocationContext)
     {
     }
 
-    public async Task<Dictionary<string, string>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
+    public async Task<IEnumerable<DataSourceItem>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
     {
         var clientRequest = new WorldserverRequest("/v2/clients", Method.Get);
         var clients = await Client.ExecuteWithErrorHandling<CollectionResponseDto<ClientDto>>(clientRequest);
+
         return clients.Items
-            .Where(str => context.SearchString is null || str.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
-            .Take(50)
-            .ToDictionary(k => k.Id.ToString(), v => v.Name);
+           .Where(client => string.IsNullOrWhiteSpace(context.SearchString) ||
+                            client.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
+           .Take(50)
+           .Select(client => new DataSourceItem(client.Id.ToString(), client.Name));
     }
 }
 
