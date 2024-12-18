@@ -28,6 +28,6 @@ public class TaskDataHandler : WorldserverInvocable, IAsyncDataSourceHandler
         });
 
         var tasks = await Client.Paginate<TaskDto>(projectsRequest);
-        return tasks.Take(50).ToDictionary(k => k.Id.ToString(), v => $"{Path.GetFileName(v.Assets.First())} ({v.Project.Name})");
+        return tasks.Take(50).ToDictionary(k => k.Id.ToString(), v => $"{Path.GetFileName(v.Assets.First())} ({v.Project.Name}, {v.TargetLocale.DisplayName})");
     }
 }

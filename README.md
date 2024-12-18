@@ -35,6 +35,7 @@ WorldServer is an enterprise translation management system (TMS) developed by RW
 - **Import task** Import task
 - **Unclaim task** Unclaim task
 - **Update task** Update task
+- **Export all project tasks** This action allows to download all tasks from the chosen project in `.zip` file, where inputs like `Project ID` and `File type` are required.
 
 ### Projects
 

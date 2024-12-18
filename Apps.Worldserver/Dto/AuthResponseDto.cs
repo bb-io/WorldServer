@@ -1,4 +1,6 @@
-﻿namespace Apps.Worldserver.Dto;
+﻿using Blackbird.Applications.Sdk.Common;
+
+namespace Apps.Worldserver.Dto;
 
 public class AuthResponseDto
 {

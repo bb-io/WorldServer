@@ -6,7 +6,7 @@ namespace Apps.Worldserver.Models.Tasks.Request;
 public class AssignTaskRequest
 {
     [Display("Assigned user IDs")]
-    [DataSource(typeof(UserDataHandler))]
+    [DataSource(typeof(UserForTaskAssigningDataHandler))]
     public List<string>? AssignedUserIds { get; set; }
 
     [Display("Assigned role IDs")]

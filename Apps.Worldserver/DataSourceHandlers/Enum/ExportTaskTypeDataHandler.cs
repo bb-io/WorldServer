@@ -8,9 +8,8 @@ public class ExportTaskTypeDataHandler : IStaticDataSourceHandler
         return new()
         {
             {"WSXZ", "WSXZ" },
-            {"BDX", "BDX" },
+            {"BDX", "Bilingual DOCX" },
             {"XLIFF", "XLIFF" },
-            {"XLZ", "XLZ" },
         };
     }
 }

@@ -9,7 +9,7 @@ public class ExportTaskSegmentationDataHandler : IStaticDataSourceHandler
         {
             {"NONE", "None" },
             {"ICE", "ICE" },
-            {"ICE100", "ICE100" },
+            {"ICE100", "ICE and 100%" },
         };
     }
 }

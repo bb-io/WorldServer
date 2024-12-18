@@ -7,6 +7,7 @@ using Apps.Worldserver.Models.Tasks.Request;
 using Apps.Worldserver.Models.Tasks.Response;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.Sdk.Utils.Extensions.Files;
@@ -36,7 +37,7 @@ public class TaskActions : WorldserverInvocable
         var filters = new List<FieldFilterV1Dto>();
         if (!string.IsNullOrEmpty(searchTasksRequest.ProjectId))
             filters.Add(new("project.id", "eq", searchTasksRequest.ProjectId));
-        if (!string.IsNullOrEmpty(searchTasksRequest.ProjectId))
+        if (!string.IsNullOrEmpty(searchTasksRequest.AssetName))
             filters.Add(new("assets", "like", $"%{searchTasksRequest.AssetName}%"));
 
         request.AddBody(new
@@ -66,7 +67,7 @@ public class TaskActions : WorldserverInvocable
 
         if (!string.IsNullOrEmpty(claimRequest.CostManagement))
         {
-            if(claimRequest.CostManagement == "include")
+            if (claimRequest.CostManagement == "include")
             {
                 var includeCostRequest = new WorldserverRequest($"/v2/tasks/includeCost", Method.Post);
                 includeCostRequest.AddBody(new[]
@@ -142,7 +143,7 @@ public class TaskActions : WorldserverInvocable
             {
                 id = int.Parse(taskRequest.TaskId),
                 transitionId = int.Parse(completeStepRequest.TransitionId),
-                commnet = completeStepRequest.Comment
+                comment = completeStepRequest.Comment
             }
         }, JsonConfig.Settings));
         await Client.ExecuteWithErrorHandling(request);
@@ -176,11 +177,13 @@ public class TaskActions : WorldserverInvocable
             await Task.Delay(1000);
             pollExportStatusResponse = await Client.ExecuteWithErrorHandling<JobDto>(pollExportStatusRequest);
         }
+        if (pollExportStatusResponse.Status == "FAILED")
+            throw new PluginMisconfigurationException("Export task process failed");
 
         var fileLink = pollExportStatusResponse.Links.First().Href.Split("ws-api")[1];
         var downloadExportedTaskRequest = new WorldserverRequest(fileLink, Method.Get);
         downloadExportedTaskRequest.AddHeader("Accept", "*/*");
-        var downloadExportedTaskResponse = await Client.ExecuteAsync(downloadExportedTaskRequest);
+        var downloadExportedTaskResponse = await Client.ExecuteWithErrorHandling(downloadExportedTaskRequest);
 
         if (zippedFileTypes.Contains(exportTaskRequest.Type))
             return await UnzipFile(downloadExportedTaskResponse.RawBytes);
@@ -221,4 +224,112 @@ public class TaskActions : WorldserverInvocable
         var file = await _fileManagementClient.UploadAsync(files.First().FileStream, MediaTypeNames.Application.Octet, files.First().UploadName);
         return file;
     }
+
+
+
+    [Action("Export all project tasks", Description = "Export all tasks from a project into a single file")]
+    public async Task<FileReference> ExportAllProjectTasksAsZip(
+        [ActionParameter] ProjectIdRequest projectIdRequest,
+        [ActionParameter] ExportAllTasksRequest exportTaskRequest)
+    {
+        var taskIds = await GetTaskIdsByProject(projectIdRequest.ProjectId);
+
+        if (!taskIds.Any())
+            throw new PluginMisconfigurationException("No tasks found in the specified project.");
+
+
+        var fileName = $"Project_{projectIdRequest.ProjectId}_Tasks";
+
+        return await ExportTasksAsZip(taskIds.ToArray(), exportTaskRequest, fileName);
+    }
+
+    private async Task<List<string>> GetTaskIdsByProject(string projectId)
+    {
+        try
+        {
+            var request = new WorldserverRequest($"/v2/projects/{projectId}", Method.Get);
+            request.AddQueryParameter("fields", "tasks(id)");
+            var response = await Client.ExecuteWithErrorHandling<ProjectTasksResponse>(request);
+
+            if (response?.Tasks == null || !response.Tasks.Any())
+                throw new PluginMisconfigurationException("No tasks found for the specified project.");
+
+
+            return response.Tasks.Select(t => t.Id).ToList();
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Error retrieving project details: " + ex.Message);
+        }
+    }
+
+
+    private async Task<FileReference> ExportTasksAsZip(string[] taskIds, ExportAllTasksRequest exportTaskRequest, string fileName)
+    {
+        try
+        {
+            var exportRequest = new WorldserverRequest($"/v2/tasks/export", Method.Post);
+            exportRequest.AddJsonBody(new
+            {
+                ids = taskIds,
+                type = exportTaskRequest.Type,
+                allowSplitAndMerge = exportTaskRequest.AllowSplitAndMerge ?? false,
+                segmentExclusion = exportTaskRequest.SegmentExclusion ?? "NONE"
+            });
+
+            var exportResponse = await Client.ExecuteAsync(exportRequest);
+            var exportResponseJson = JsonConvert.DeserializeObject<ExportResponse>(exportResponse.Content);
+
+            if (!exportResponse.IsSuccessful)
+            {
+                throw new Exception("Export request failed with status: " + exportResponse.StatusCode);
+            }
+
+
+            var responseJson = JsonConvert.DeserializeObject<ExportResponse>(exportResponse.Content);
+            if (responseJson == null || responseJson.Response == null)
+            {
+                throw new Exception("Invalid response format received.");
+            }
+
+
+            var pollExportStatusRequest = new WorldserverRequest($"/v2/jobs/{exportResponseJson.Response.Id}", Method.Get);
+            JobDto exportStatusResponse;
+            do
+            {
+                await Task.Delay(1000);
+                var pollResponse = await Client.ExecuteAsync(pollExportStatusRequest);
+
+                if (!pollResponse.IsSuccessful)
+                    throw new Exception("Polling request failed.");
+
+                exportStatusResponse = JsonConvert.DeserializeObject<JobDto>(pollResponse.Content);
+            } while (exportStatusResponse.Status == "STILL_IN_PROGRESS" || exportStatusResponse.Status == "NOT_STARTED");
+
+            if (exportStatusResponse.Status == "FAILED")
+                throw new PluginMisconfigurationException("Export process failed.");
+
+            var fileLink = exportStatusResponse.Links.First().Href.Split("ws-api")[1];
+            var downloadRequest = new WorldserverRequest(fileLink, Method.Get);
+            downloadRequest.AddHeader("Accept", "*/*");
+
+            var downloadResponse = await Client.ExecuteAsync(downloadRequest);
+
+            using var zipStream = new MemoryStream(downloadResponse.RawBytes);
+
+
+            var uploadedFile = await _fileManagementClient.UploadAsync(
+                zipStream,
+                MediaTypeNames.Application.Zip,
+                $"{fileName}.zip");
+
+            return uploadedFile;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Error exporting tasks as ZIP: " + ex.Message);
+        }
+
+    }
 }
+
