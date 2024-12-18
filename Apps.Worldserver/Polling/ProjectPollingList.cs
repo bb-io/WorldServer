@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Apps.Worldserver.Api;
 using Apps.Worldserver.Dto;
@@ -57,9 +58,9 @@ namespace Apps.Worldserver.Polling
                 })
                 .ToList();
 
-
             return new PollingEventResponse<ProjectMemory, List<ProjectResponse>>
             {
+                FlyBird = newProjects.Any(),
                 Memory = new ProjectMemory
                 {
                     LastPollingTime = DateTime.UtcNow,
