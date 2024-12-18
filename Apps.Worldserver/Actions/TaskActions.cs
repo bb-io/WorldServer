@@ -237,24 +237,25 @@ public class TaskActions : WorldserverInvocable
         if (!taskIds.Any())
             throw new PluginMisconfigurationException("No tasks found in the specified project.");
 
-        var projectDetails = await GetProjectDetailsById(projectIdRequest.ProjectId);
-        var fileName = $"{projectDetails.Name}_{projectDetails.Id}_Tasks";
+
+        var fileName = $"Project_{projectIdRequest.ProjectId}_Tasks";
 
         return await ExportTasksAsZip(taskIds.ToArray(), exportTaskRequest, fileName);
     }
 
-    private async Task<(string Name, string Id)> GetProjectDetailsById(string projectId)
+    private async Task<List<string>> GetTaskIdsByProject(string projectId)
     {
         try
         {
             var request = new WorldserverRequest($"/v2/projects/{projectId}", Method.Get);
-            request.AddQueryParameter("fields", "id,name");
-            var response = await Client.ExecuteWithErrorHandling<ProjectIdDto>(request);
+            request.AddQueryParameter("fields", "tasks(id)");
+            var response = await Client.ExecuteWithErrorHandling<ProjectTasksResponse>(request);
 
-            if (response == null || string.IsNullOrEmpty(response.Name) || string.IsNullOrEmpty(response.Id))
-                throw new PluginMisconfigurationException("Project details could not be retrieved.");
+            if (response?.Tasks == null || !response.Tasks.Any())
+                throw new PluginMisconfigurationException("No tasks found for the specified project.");
 
-            return (response.Name, response.Id);
+
+            return response.Tasks.Select(t => t.Id).ToList();
         }
         catch (Exception ex)
         {
@@ -262,28 +263,8 @@ public class TaskActions : WorldserverInvocable
         }
     }
 
-    public async Task<List<string>> GetTaskIdsByProject(string projectId)
-    {
-        try
-        {
-            var request = new WorldserverRequest($"/v2/tasks", Method.Get);
-            request.AddQueryParameter("projectId", projectId);
-            request.AddQueryParameter("fields", "id,project(id,name)");
-            var response = await Client.ExecuteWithErrorHandling<TaskResponse>(request);
 
-            if (response != null && response.Items != null && response.Items.Any())
-                return response.Items.Select(t => t.Id).ToList();
-            else
-                throw new PluginMisconfigurationException("No tasks found for the specified project.");
-        }
-        catch (Exception ex)
-        {
-            throw new Exception("Error retrieving task IDs: " + ex.Message);
-        }
-    }
-
-
-    public async Task<FileReference> ExportTasksAsZip(string[] taskIds, ExportAllTasksRequest exportTaskRequest, string fileName)
+    private async Task<FileReference> ExportTasksAsZip(string[] taskIds, ExportAllTasksRequest exportTaskRequest, string fileName)
     {
         try
         {
@@ -333,8 +314,6 @@ public class TaskActions : WorldserverInvocable
             downloadRequest.AddHeader("Accept", "*/*");
 
             var downloadResponse = await Client.ExecuteAsync(downloadRequest);
-
-            Console.WriteLine($"RawBytes Length: {downloadResponse.RawBytes?.Length ?? 0}");
 
             using var zipStream = new MemoryStream(downloadResponse.RawBytes);
 

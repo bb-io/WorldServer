@@ -12,7 +12,7 @@ namespace Apps.Worldserver.Models.Tasks.Request
     public class ProjectIdRequest
     {
         [Display("Project ID")]
-        [DataSource(typeof(ProjectIdDataHandler))]
+        [DataSource(typeof(ProjectDataHandler))]
         public string ProjectId { get; set; }
     }
 }

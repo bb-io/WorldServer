@@ -7,6 +7,7 @@ namespace Apps.Worldserver.Models.Tasks.Request
 {
     public class ExportAllTasksRequest
     {
+        [Display("File type")]
         [StaticDataSource(typeof(ExportTaskTypeDataHandler))]
         public string Type { get; set; }
 
