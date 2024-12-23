@@ -138,81 +138,86 @@ namespace Apps.Worldserver.Polling
 
             if (projects == null || !projects.Any())
             {
-                return new PollingEventResponse<ProjectMemory, List<ProjectCompletedResponse>>
+                var oldProjects = request.Memory.LastProjects ?? new List<ProjectMemoryItem>();
+
+                if (oldProjects.Any())
                 {
-                    FlyBird = false,
-                    Memory = new ProjectMemory
+                    var disappearedAll = oldProjects.Select(op => new ProjectCompletedResponse
                     {
-                        LastPollingTime = DateTime.UtcNow,
-                        Triggered = false,
-                        LastProjectTotal = 0
-                    }
-                };
+                        Id = op.Id,
+                        Name = op.Name,
+                        CompletionDate = DateTime.UtcNow
+                    })
+                    .ToList();
+
+                    request.Memory.LastProjects = new List<ProjectMemoryItem>();
+                    request.Memory.LastPollingTime = DateTime.UtcNow;
+                    request.Memory.Triggered = true;
+                    request.Memory.LastProjectTotal = 0;
+
+                    return new()
+                    {
+                        FlyBird = true,
+                        Memory = request.Memory,
+                        Result = disappearedAll
+                    };
+                }
+                else
+                {
+                    request.Memory.LastPollingTime = DateTime.UtcNow;
+                    request.Memory.Triggered = false;
+                    request.Memory.LastProjectTotal = 0;
+
+                    return new()
+                    {
+                        FlyBird = false,
+                        Memory = request.Memory
+                    };
+                }
             }
 
-            var lastPollingTime = request.Memory.LastPollingTime ?? DateTime.MinValue;
+            var currentProjects = projects
+                .SelectMany(group => group.Projects)
+                .Select(proj => new ProjectMemoryItem
+                {
+                    Id = proj.Id,
+                    Name = proj.Name
+                })
+                .ToList();
 
-            var completedProjects = projects
-        .SelectMany(group => group.Projects)
-        .Where(project => project.CompletedTasks == project.TotalTasks &&
-                          project.CompletionDate > lastPollingTime)
-        .Select(project => new ProjectCompletedResponse
-        {
-            Id = project.Id,
-            Name = project.Name,
-            CompletionDate = project.CompletionDate
-        })
-        .ToList();
+            var oldProjectList = request.Memory.LastProjects ?? new List<ProjectMemoryItem>();
 
-            var currentTotal = projects
-        .SelectMany(group => group.Projects)
-        .Count();
+            var disappearedProjects = oldProjectList
+                .Where(oldP => !currentProjects.Any(cur => cur.Id == oldP.Id))
+                .Select(oldP => new ProjectCompletedResponse
+                {
+                    Id = oldP.Id,
+                    Name = oldP.Name,
+                    CompletionDate = DateTime.UtcNow
+                })
+                .ToList();
 
-            var oldTotal = request.Memory.LastProjectTotal;
+            request.Memory.LastProjects = currentProjects;
+            request.Memory.LastPollingTime = DateTime.UtcNow;
+            request.Memory.LastProjectTotal = currentProjects.Count;
 
-            if (completedProjects.Any())
+            if (disappearedProjects.Any())
             {
-                var latestEventTime = completedProjects.Max(p => p.CompletionDate);
-
-                return new PollingEventResponse<ProjectMemory, List<ProjectCompletedResponse>>
+                request.Memory.Triggered = true;
+                return new()
                 {
                     FlyBird = true,
-                    Memory = new ProjectMemory
-                    {
-                        LastPollingTime = latestEventTime,
-                        Triggered = true,
-                        LastProjectTotal = currentTotal
-                    },
-                    Result = completedProjects
+                    Memory = request.Memory,
+                    Result = disappearedProjects
                 };
-            }
-            else if (currentTotal < oldTotal)
-            {
-                var diff = oldTotal - currentTotal;
-                var fallbackCompletedList = new List<ProjectCompletedResponse>();
-
-                for (int i = 0; i < diff; i++)
-                {
-                    fallbackCompletedList.Add(new ProjectCompletedResponse
-                    {
-                        Id = 0,
-                        Name = $"Unknown project (no longer active in WorldServer) #{i + 1}",
-                        CompletionDate = DateTime.UtcNow
-                    });
-                }
-
             }
             else
             {
-                return new PollingEventResponse<ProjectMemory, List<ProjectCompletedResponse>>
+                request.Memory.Triggered = false;
+                return new()
                 {
                     FlyBird = false,
-                    Memory = new ProjectMemory
-                    {
-                        LastPollingTime = DateTime.UtcNow,
-                        Triggered = false,
-                        LastProjectTotal = currentTotal
-                    }
+                    Memory = request.Memory
                 };
             }
         }
