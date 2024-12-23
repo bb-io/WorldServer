@@ -119,7 +119,9 @@ namespace Apps.Worldserver.Polling
                     Memory = new()
                     {
                         LastPollingTime = DateTime.UtcNow,
-                        Triggered = false
+                        Triggered = false,
+                        LastProjectTotal = 0,
+                        LastProjects = new List<ProjectMemoryItem>()
                     }
                 };
             }
@@ -143,6 +145,7 @@ namespace Apps.Worldserver.Polling
                     {
                         LastPollingTime = DateTime.UtcNow,
                         Triggered = false,
+                        LastProjectTotal = 0
                     }
                 };
             }
@@ -161,6 +164,12 @@ namespace Apps.Worldserver.Polling
         })
         .ToList();
 
+            var currentTotal = projects
+        .SelectMany(group => group.Projects)
+        .Count();
+
+            var oldTotal = request.Memory.LastProjectTotal;
+
             if (completedProjects.Any())
             {
                 var latestEventTime = completedProjects.Max(p => p.CompletionDate);
@@ -171,21 +180,41 @@ namespace Apps.Worldserver.Polling
                     Memory = new ProjectMemory
                     {
                         LastPollingTime = latestEventTime,
-                        Triggered = true
+                        Triggered = true,
+                        LastProjectTotal = currentTotal
                     },
                     Result = completedProjects
                 };
             }
-
-            return new PollingEventResponse<ProjectMemory, List<ProjectCompletedResponse>>
+            else if (currentTotal < oldTotal)
             {
-                FlyBird = false,
-                Memory = new ProjectMemory
+                var diff = oldTotal - currentTotal;
+                var fallbackCompletedList = new List<ProjectCompletedResponse>();
+
+                for (int i = 0; i < diff; i++)
                 {
-                    LastPollingTime = DateTime.UtcNow,
-                    Triggered = false
+                    fallbackCompletedList.Add(new ProjectCompletedResponse
+                    {
+                        Id = 0,
+                        Name = $"Unknown project (no longer active in WorldServer) #{i + 1}",
+                        CompletionDate = DateTime.UtcNow
+                    });
                 }
-            };
+
+            }
+            else
+            {
+                return new PollingEventResponse<ProjectMemory, List<ProjectCompletedResponse>>
+                {
+                    FlyBird = false,
+                    Memory = new ProjectMemory
+                    {
+                        LastPollingTime = DateTime.UtcNow,
+                        Triggered = false,
+                        LastProjectTotal = currentTotal
+                    }
+                };
+            }
         }
     }
 }
