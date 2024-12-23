@@ -13,13 +13,5 @@ namespace Apps.Worldserver.Polling.Models
         public bool Triggered { get; set; }
 
         public int LastProjectTotal { get; set; }
-
-        public List<ProjectMemoryItem>? LastProjects { get; set; } = new();
-    }
-
-    public class ProjectMemoryItem
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
     }
 }

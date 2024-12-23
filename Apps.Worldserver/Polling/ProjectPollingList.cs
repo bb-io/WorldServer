@@ -120,8 +120,7 @@ namespace Apps.Worldserver.Polling
                     {
                         LastPollingTime = DateTime.UtcNow,
                         Triggered = false,
-                        LastProjectTotal = 0,
-                        LastProjects = new List<ProjectMemoryItem>()
+                        LastProjectTotal = 0
                     }
                 };
             }
@@ -136,84 +135,44 @@ namespace Apps.Worldserver.Polling
 
             var projects = await Client.Paginate<ProjectGroupResponse>(projectsRequest);
 
-            if (projects == null || !projects.Any())
+            var currentTotal = 0;
+            if (projects != null && projects.Any())
+                currentTotal = projects.SelectMany(g => g.Projects).Count();
+
+            var oldTotal = request.Memory.LastProjectTotal;
+
+            if (currentTotal < oldTotal)
             {
-                var oldProjects = request.Memory.LastProjects ?? new List<ProjectMemoryItem>();
+                var diff = oldTotal - currentTotal;
 
-                if (oldProjects.Any())
-                {
-                    var disappearedAll = oldProjects.Select(op => new ProjectCompletedResponse
-                    {
-                        Id = op.Id,
-                        Name = op.Name,
-                        CompletionDate = DateTime.UtcNow
-                    })
-                    .ToList();
-
-                    request.Memory.LastProjects = new List<ProjectMemoryItem>();
-                    request.Memory.LastPollingTime = DateTime.UtcNow;
-                    request.Memory.Triggered = true;
-                    request.Memory.LastProjectTotal = 0;
-
-                    return new()
-                    {
-                        FlyBird = true,
-                        Memory = request.Memory,
-                        Result = disappearedAll
-                    };
-                }
-                else
-                {
-                    request.Memory.LastPollingTime = DateTime.UtcNow;
-                    request.Memory.Triggered = false;
-                    request.Memory.LastProjectTotal = 0;
-
-                    return new()
-                    {
-                        FlyBird = false,
-                        Memory = request.Memory
-                    };
-                }
-            }
-
-            var currentProjects = projects
-                .SelectMany(group => group.Projects)
-                .Select(proj => new ProjectMemoryItem
-                {
-                    Id = proj.Id,
-                    Name = proj.Name
-                })
-                .ToList();
-
-            var oldProjectList = request.Memory.LastProjects ?? new List<ProjectMemoryItem>();
-
-            var disappearedProjects = oldProjectList
-                .Where(oldP => !currentProjects.Any(cur => cur.Id == oldP.Id))
-                .Select(oldP => new ProjectCompletedResponse
-                {
-                    Id = oldP.Id,
-                    Name = oldP.Name,
-                    CompletionDate = DateTime.UtcNow
-                })
-                .ToList();
-
-            request.Memory.LastProjects = currentProjects;
-            request.Memory.LastPollingTime = DateTime.UtcNow;
-            request.Memory.LastProjectTotal = currentProjects.Count;
-
-            if (disappearedProjects.Any())
-            {
+                request.Memory.LastProjectTotal = currentTotal;
+                request.Memory.LastPollingTime = DateTime.UtcNow;
                 request.Memory.Triggered = true;
+
+                var completedProjects = new List<ProjectCompletedResponse>();
+                for (int i = 0; i < diff; i++)
+                {
+                    completedProjects.Add(new ProjectCompletedResponse
+                    {
+                        Id = 0,
+                        Name = "Сompleted project",
+                        CompletionDate = DateTime.UtcNow
+                    });
+                }
+
                 return new()
                 {
                     FlyBird = true,
                     Memory = request.Memory,
-                    Result = disappearedProjects
+                    Result = completedProjects
                 };
             }
             else
             {
+                request.Memory.LastProjectTotal = currentTotal;
+                request.Memory.LastPollingTime = DateTime.UtcNow;
                 request.Memory.Triggered = false;
+
                 return new()
                 {
                     FlyBird = false,
