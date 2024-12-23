@@ -11,5 +11,7 @@ namespace Apps.Worldserver.Polling.Models
         public DateTime? LastPollingTime { get; set; }
 
         public bool Triggered { get; set; }
+
+        public int LastProjectTotal { get; set; }
     }
 }
