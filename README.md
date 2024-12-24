@@ -50,6 +50,11 @@ WorldServer is an enterprise translation management system (TMS) developed by RW
 - **Get project group** Get project group
 - **Search project groups** Search project groups
 
+### Events
+- **On project created**  Triggered when a new project was created
+- **On project completed** Triggered when a project is completed
+- **On task completed** Triggered when tasks are completed
+
 ### Files
 
 - **Download file** Download task file
