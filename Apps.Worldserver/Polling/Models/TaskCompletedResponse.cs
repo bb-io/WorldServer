@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Blackbird.Applications.Sdk.Common;
+﻿using Blackbird.Applications.Sdk.Common;
 
 namespace Apps.Worldserver.Polling.Models
 {
+    public class CompletedTasksResponse
+    {
+        [Display("Completed tasks")]
+        public List<TaskCompletedResponse> Tasks { get; set; } = new();
+    }
+
     public class TaskCompletedResponse
     {
         [Display("Task ID")]

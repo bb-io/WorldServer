@@ -19,7 +19,7 @@ namespace Apps.Worldserver.Polling
         public TaskPollingList(InvocationContext invocationContext) : base(invocationContext) { }
 
         [PollingEvent("On task completed", "Triggered when tasks are completed in WorldServer")]
-        public async Task<PollingEventResponse<TaskMemory, List<TaskCompletedResponse>>> OnTaskCompleted(
+        public async Task<PollingEventResponse<TaskMemory, CompletedTasksResponse>> OnTaskCompleted(
             PollingEventRequest<TaskMemory> request)
         {
             if (request.Memory is null)
@@ -44,15 +44,17 @@ namespace Apps.Worldserver.Polling
                     .ToList();
 
                 request.Memory.CompletedTaskIds.AddRange(alreadyCompletedIds);
-
                 request.Memory.LastPollingTime = DateTime.UtcNow;
                 request.Memory.Triggered = false;
 
-                return new PollingEventResponse<TaskMemory, List<TaskCompletedResponse>>
+                return new PollingEventResponse<TaskMemory, CompletedTasksResponse>
                 {
                     FlyBird = false,
                     Memory = request.Memory,
-                    Result = new List<TaskCompletedResponse>()
+                    Result = new CompletedTasksResponse
+                    {
+                        Tasks = new List<TaskCompletedResponse>() 
+                    }
                 };
             }
 
@@ -63,10 +65,11 @@ namespace Apps.Worldserver.Polling
 
             if (!newlyCompleted.Any())
             {
-                return new PollingEventResponse<TaskMemory, List<TaskCompletedResponse>>
+                return new PollingEventResponse<TaskMemory, CompletedTasksResponse>
                 {
                     FlyBird = false,
-                    Memory = request.Memory 
+                    Memory = request.Memory ,
+                    Result = new CompletedTasksResponse()
                 };
             }
 
@@ -77,16 +80,21 @@ namespace Apps.Worldserver.Polling
                 CompletionDetected = DateTime.UtcNow
             }).ToList();
 
-            request.Memory.CompletedTaskIds.AddRange(newlyCompleted.Select(t => t.Id.ToString()));
+            var resultWrapper = new CompletedTasksResponse
+            {
+                Tasks = result
+            };
 
+            request.Memory.CompletedTaskIds.AddRange(newlyCompleted.Select(t => t.Id.ToString()));
             request.Memory.LastPollingTime = DateTime.UtcNow;
             request.Memory.Triggered = true;
 
-            return new PollingEventResponse<TaskMemory, List<TaskCompletedResponse>>
+
+            return new PollingEventResponse<TaskMemory, CompletedTasksResponse>
             {
                 FlyBird = true,
                 Memory = request.Memory,
-                Result = result
+                Result = resultWrapper
             };
         }
     }
