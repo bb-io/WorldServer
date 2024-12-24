@@ -27,6 +27,12 @@ public class ProjectDataHandler : WorldserverInvocable, IAsyncDataSourceHandler
             filters
         });
         var projects = await Client.Paginate<ProjectGroupDto>(projectsRequest);
+
+        var jsonResult = System.Text.Json.JsonSerializer.Serialize(projects, new System.Text.Json.JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+
         return projects.SelectMany(x => x.Projects)
             .Where(str => context.SearchString is null || str.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
             .Take(50)
