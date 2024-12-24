@@ -21,7 +21,7 @@ namespace Apps.Worldserver.Polling
         public ProjectPollingList(InvocationContext invocationContext):base(invocationContext) { }
 
         [PollingEvent("On project created", "Triggered when a new project was created")]
-        public async Task<PollingEventResponse<ProjectMemory, List<CustomProjectResponse>>> OnProjectCreated(PollingEventRequest<ProjectMemory> request)
+        public async Task<PollingEventResponse<ProjectMemory, ProjectsCreatedResponse>> OnProjectCreated(PollingEventRequest<ProjectMemory> request)
         {
             if (request.Memory is null)
             {
@@ -33,7 +33,8 @@ namespace Apps.Worldserver.Polling
                         LastPollingTime = DateTime.UtcNow,
                         Triggered = false,
                         LastProjectTotal = 0
-                    }
+                    },
+                    Result = new ProjectsCreatedResponse()
                 };
             }
 
@@ -49,7 +50,7 @@ namespace Apps.Worldserver.Polling
 
             if (projects == null || !projects.Any())
             {
-                return new PollingEventResponse<ProjectMemory, List<CustomProjectResponse>>
+                return new PollingEventResponse<ProjectMemory, ProjectsCreatedResponse>
                 {
                     FlyBird = false,
                     Memory = new ProjectMemory
@@ -57,10 +58,11 @@ namespace Apps.Worldserver.Polling
                         LastPollingTime = DateTime.UtcNow,
                         Triggered = false,
                         LastProjectTotal = 0
-                    }
+                    },
+                    Result = new ProjectsCreatedResponse()
                 };
             }
- 
+
             var lastPollingTime = request.Memory.LastPollingTime ?? DateTime.MinValue;
 
             var newProjects = projects
@@ -82,7 +84,12 @@ namespace Apps.Worldserver.Polling
             {
                 var latestEventTime = newProjects.Max(p => p.CreationDate);
 
-                return new PollingEventResponse<ProjectMemory, List<CustomProjectResponse>>
+                var resultWrapper = new ProjectsCreatedResponse
+                {
+                    Projects = newProjects
+                };
+
+                return new PollingEventResponse<ProjectMemory, ProjectsCreatedResponse>
                 {
                     FlyBird = true,
                     Memory = new ProjectMemory
@@ -91,11 +98,11 @@ namespace Apps.Worldserver.Polling
                         Triggered = true,
                         LastProjectTotal = currentTotal
                     },
-                    Result = newProjects
+                    Result = resultWrapper
                 };
             }
 
-            return new PollingEventResponse<ProjectMemory, List<CustomProjectResponse>>
+            return new PollingEventResponse<ProjectMemory, ProjectsCreatedResponse>
             {
                 FlyBird = false,
                 Memory = new ProjectMemory
@@ -103,7 +110,8 @@ namespace Apps.Worldserver.Polling
                     LastPollingTime = DateTime.UtcNow,
                     Triggered = false,
                     LastProjectTotal = currentTotal
-                }
+                },
+                Result = new ProjectsCreatedResponse()
             };
         }
 
