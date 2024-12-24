@@ -36,6 +36,26 @@ namespace Apps.Worldserver.Polling
 
             var allTasks = await Client.Paginate<TaskDto>(tasksRequest);
 
+            if (request.Memory.LastPollingTime == null)
+            {
+                var alreadyCompletedIds = allTasks
+                    .Where(t => t.Status?.Status == "COMPLETED")
+                    .Select(t => t.Id.ToString())
+                    .ToList();
+
+                request.Memory.CompletedTaskIds.AddRange(alreadyCompletedIds);
+
+                request.Memory.LastPollingTime = DateTime.UtcNow;
+                request.Memory.Triggered = false;
+
+                return new PollingEventResponse<TaskMemory, List<TaskCompletedResponse>>
+                {
+                    FlyBird = false,
+                    Memory = request.Memory,
+                    Result = new List<TaskCompletedResponse>()
+                };
+            }
+
             var newlyCompleted = allTasks
                .Where(t => t.Status?.Status == "COMPLETED")
                .Where(t => !request.Memory.CompletedTaskIds.Contains(t.Id.ToString()))
