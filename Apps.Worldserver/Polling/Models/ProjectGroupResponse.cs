@@ -10,6 +10,7 @@ namespace Apps.Worldserver.Polling.Models
     public class ProjectGroupResponse
     {
         public List<ProjectPollingDto> Projects { get; set; }
+        public int Total {  get; set; }
     }
     public class ProjectPollingDto
     {

@@ -141,21 +141,35 @@ namespace Apps.Worldserver.Polling
 
             var oldTotal = request.Memory.LastProjectTotal;
 
-            if (currentTotal < oldTotal)
+            if (currentTotal == oldTotal)
             {
-                var diff = oldTotal - currentTotal;
-
-                request.Memory.LastProjectTotal = currentTotal;
                 request.Memory.LastPollingTime = DateTime.UtcNow;
-                request.Memory.Triggered = true;
+                request.Memory.Triggered = false;
 
+                return new()
+                {
+                    FlyBird = false,
+                    Memory = request.Memory
+                };
+            }
+
+            request.Memory.LastProjectTotal = currentTotal;
+            request.Memory.LastPollingTime = DateTime.UtcNow;
+            request.Memory.Triggered = true;
+
+            var diff = currentTotal - oldTotal;
+
+            if (diff < 0)
+            {
+                var completedCount = Math.Abs(diff);
                 var completedProjects = new List<ProjectCompletedResponse>();
-                for (int i = 0; i < diff; i++)
+
+                for (int i = 0; i < completedCount; i++)
                 {
                     completedProjects.Add(new ProjectCompletedResponse
                     {
                         Id = 0,
-                        Name = "Сompleted project",
+                        Name = "Completed project",
                         CompletionDate = DateTime.UtcNow
                     });
                 }
@@ -169,14 +183,11 @@ namespace Apps.Worldserver.Polling
             }
             else
             {
-                request.Memory.LastProjectTotal = currentTotal;
-                request.Memory.LastPollingTime = DateTime.UtcNow;
-                request.Memory.Triggered = false;
-
                 return new()
                 {
-                    FlyBird = false,
-                    Memory = request.Memory
+                    FlyBird = true,
+                    Memory = request.Memory,
+                    Result = new List<ProjectCompletedResponse>()
                 };
             }
         }
