@@ -18,7 +18,7 @@ namespace Apps.Worldserver.Polling
     {
         public TaskPollingList(InvocationContext invocationContext) : base(invocationContext) { }
 
-        [PollingEvent("On task completed", "Triggered when tasks are completed in WorldServer")]
+        [PollingEvent("On task completed", "Triggered when tasks are completed")]
         public async Task<PollingEventResponse<TaskMemory, CompletedTasksResponse>> OnTaskCompleted(
             PollingEventRequest<TaskMemory> request)
         {
