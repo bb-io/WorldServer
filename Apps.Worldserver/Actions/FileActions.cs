@@ -18,7 +18,7 @@ using System.Text;
 
 namespace Apps.Worldserver.Actions;
 
-[ActionList]
+[ActionList("Files")]
 public class FileActions : WorldserverInvocable
 {
     private readonly IFileManagementClient _fileManagementClient;

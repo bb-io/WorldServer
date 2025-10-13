@@ -20,7 +20,7 @@ using System.Net.Mime;
 
 namespace Apps.Worldserver.Actions;
 
-[ActionList]
+[ActionList("Tasks")]
 public class TaskActions : WorldserverInvocable
 {
     private readonly IFileManagementClient _fileManagementClient;
