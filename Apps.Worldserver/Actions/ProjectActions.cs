@@ -13,7 +13,7 @@ using Apps.Worldserver.Dto;
 
 namespace Apps.Worldserver.Actions;
 
-[ActionList]
+[ActionList("Projects")]
 public class ProjectActions : WorldserverInvocable
 {
     public ProjectActions(InvocationContext invocationContext) : base(invocationContext)

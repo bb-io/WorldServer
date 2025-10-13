@@ -13,7 +13,7 @@ using RestSharp;
 
 namespace Apps.Worldserver.Actions;
 
-[ActionList]
+[ActionList("Project groups")]
 public class ProjectGroupActions : WorldserverInvocable
 {
     private readonly IFileManagementClient _fileManagementClient;
