@@ -31,8 +31,8 @@ public class LocaleDataHandler : WorldserverInvocable, IAsyncDataSourceItemHandl
         var projectType = await Client.ExecuteWithErrorHandling<ProjectTypeDto>(projectTypeRequest);
 
         return locales.Where(locale => locale.Id != projectType.SourceLocale.Id)
-            .Where(locale => string.IsNullOrWhiteSpace(context.SearchString) ||
-            locale.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
+            .Where(locale => string.IsNullOrWhiteSpace(context.SearchString) || 
+                             locale.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
             .Select(locale=> new DataSourceItem(locale.Id.ToString(), locale.Name));
     }
 }

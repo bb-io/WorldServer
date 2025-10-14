@@ -24,12 +24,25 @@ public class WorldserverClient : BlackBirdRestClient
 
     protected override Exception ConfigureErrorException(RestResponse response)
     {
+        if (string.IsNullOrEmpty(response.Content))
+        {
+            if (string.IsNullOrEmpty(response.ErrorMessage))
+            {
+                return new PluginApplicationException($"Request failed with status code {response.StatusCode}");
+            }
+            
+            return new PluginApplicationException(response.ErrorMessage);
+        }
+        
         var errors = JsonConvert.DeserializeObject<WorldserverError>(response.Content!)!;
-
         if(errors.Errors.Any())
-            return new($"Error type: {errors.Errors.First().Type}.\nMessage: {errors.Errors.First().Message}");
-
-        return new("Unknown error");
+        {
+            var firstError = errors.Errors.First();
+            return new PluginApplicationException(
+                $"Error type: {firstError.Type}; Message: {firstError.Message}");
+        }
+        
+        return new PluginApplicationException($"Request failed with status code {response.StatusCode}. Content: {response.Content}");
     }
 
     public async Task<List<T>> Paginate<T>(RestRequest request)

@@ -53,6 +53,8 @@ public class ProjectGroupActions : WorldserverInvocable
         [ActionParameter] GetClientRequest clientRequest,
         [ActionParameter] CreateProjectGroupRequest projectGroupRequest)
     {
+        await ValidateLocales(projectGroupRequest.Locales);
+        
         var createProjectGroupDto = new CreateProjectGroupDto();
 
         var fileActions = new FileActions(InvocationContext, _fileManagementClient);
@@ -82,6 +84,30 @@ public class ProjectGroupActions : WorldserverInvocable
         else if(result.Response.Any() && result.Response.First().Warnings != null && result.Response.First().Warnings.Any())
             throw new ArgumentException(result.Response.First().Warnings.First().Message);
         throw new ArgumentException("Unknown error");
+    }
+    
+    private async Task ValidateLocales(List<string> localeIds)
+    {
+        var request = new WorldserverRequest($"/v2/locales", Method.Get);
+        var locales = await Client.Paginate<LocaleDto>(request);
+        
+        foreach(var localeId in localeIds)
+        {
+            if(string.IsNullOrEmpty(localeId))
+            {
+                throw new ArgumentException("Locale ID cannot be null or empty");
+            }
+            
+            if(!int.TryParse(localeId, out _))
+            {
+                throw new ArgumentException($"Locale ID should be an integer. Invalid value: {localeId}. Please select a value from the dropdown.");
+            }
+            
+            if (locales.All(l => l.Id.ToString() != localeId))
+            {
+                throw new ArgumentException($"Locale with ID {localeId} does not exist");
+            }
+        }
     }
 }
 
