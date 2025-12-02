@@ -321,7 +321,7 @@ public class TaskActions : WorldserverInvocable
             var uploadedFile = await _fileManagementClient.UploadAsync(
                 zipStream,
                 MediaTypeNames.Application.Zip,
-                $"{fileName}.zip");
+                $"{fileName}.wsxz");
 
             return uploadedFile;
         }
