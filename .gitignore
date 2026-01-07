@@ -365,3 +365,4 @@ FodyWeavers.xsd
 /ConsoleApp1/Program.cs
 
 .idea/
+/Tests.Worldserver/appsettings.json
