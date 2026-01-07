@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.10.35027.167
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11312.151 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apps.Worldserver", "Apps.Worldserver\Apps.Worldserver.csproj", "{88DBA854-E391-4214-9DEE-D19CA206AEED}"
 EndProject
@@ -12,9 +12,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{59CA0495-248C-4003-8310-CD19DEFFB43B}"
 	ProjectSection(SolutionItems) = preProject
-		README.md = README.md
 		.gitignore = .gitignore
+		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Worldserver", "Tests.Worldserver\Tests.Worldserver.csproj", "{8BE04AAB-314B-4E00-8726-BF5D781C2CCE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,6 +32,10 @@ Global
 		{FDD4FA6A-CFBC-41EB-84A0-B6FA5995080F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FDD4FA6A-CFBC-41EB-84A0-B6FA5995080F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FDD4FA6A-CFBC-41EB-84A0-B6FA5995080F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BE04AAB-314B-4E00-8726-BF5D781C2CCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BE04AAB-314B-4E00-8726-BF5D781C2CCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BE04AAB-314B-4E00-8726-BF5D781C2CCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BE04AAB-314B-4E00-8726-BF5D781C2CCE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
