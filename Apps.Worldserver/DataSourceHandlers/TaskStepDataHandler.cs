@@ -28,7 +28,7 @@ public class TaskStepDataHandler : WorldserverInvocable, IAsyncDataSourceHandler
         return response.Steps
            .Where(str => context.SearchString is null || str.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
            .Take(50)
-           .ToDictionary(k => k.Id.ToString(), v => v.Name);
+           .ToDictionary(k => (k.WorkflowStep?.Id ?? k.Id).ToString(), v => v.Name);
     }
 }
 

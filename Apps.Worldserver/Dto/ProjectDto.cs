@@ -135,8 +135,12 @@ public class CurrentTaskStep
     [Display("Creation date")]
     public DateTime CreationDate { get; set; }
 
+    [Display("Workflow step")]
+    public TaskWorkflowStep WorkflowStep { get; set; }
+
     [Display("Workflow transitions")]
     public List<WorkflowTransition> WorkflowTransitions { get; set; }
+
 }
 
 public class DefaultWorkflow
