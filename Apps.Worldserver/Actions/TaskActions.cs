@@ -52,6 +52,11 @@ public class TaskActions : WorldserverInvocable
     [Action("Get task", Description = "Get task")]
     public async Task<TaskDto> GetTask([ActionParameter] GetTaskRequest taskRequest)
     {
+        if (string.IsNullOrEmpty(taskRequest.TaskId))
+        {
+            throw new PluginMisconfigurationException("Task Id is required to get a task.");
+        }
+
         var request = new WorldserverRequest($"/v2/tasks/{taskRequest.TaskId}", Method.Get);
         var response = await Client.ExecuteWithErrorHandling<TaskDto>(request);
         return response;
@@ -61,6 +66,11 @@ public class TaskActions : WorldserverInvocable
     public async Task ClaimTask([ActionParameter] GetTaskRequest taskRequest,
         [ActionParameter] ClaimTaskRequest claimRequest)
     {
+        if (string.IsNullOrEmpty(taskRequest.TaskId))
+        {
+            throw new PluginMisconfigurationException("Task Id is required to claim a task.");
+        }
+
         var request = new WorldserverRequest($"/v2/tasks/claim", Method.Post);
         request.AddBody(new[] { new { id = int.Parse(taskRequest.TaskId) } });
         await Client.ExecuteWithErrorHandling(request);
@@ -91,6 +101,11 @@ public class TaskActions : WorldserverInvocable
     [Action("Unclaim task", Description = "Unclaim task")]
     public async Task UnclaimTask([ActionParameter] GetTaskRequest taskRequest)
     {
+        if (string.IsNullOrEmpty(taskRequest.TaskId))
+        {
+            throw new PluginMisconfigurationException("Task Id is required to unclaim a task.");
+        }
+
         var request = new WorldserverRequest($"/v2/tasks/unclaim", Method.Post);
         request.AddBody(new[] { new { id = int.Parse(taskRequest.TaskId) } });
         await Client.ExecuteWithErrorHandling(request);
@@ -100,6 +115,11 @@ public class TaskActions : WorldserverInvocable
     public async Task UpdateTask([ActionParameter] GetTaskRequest taskRequest,
         [ActionParameter] UpdateTaskRequest updateRequest)
     {
+        if (string.IsNullOrEmpty(taskRequest.TaskId))
+        {
+            throw new PluginMisconfigurationException("Task Id is required to update a task.");
+        }
+
         var request = new WorldserverRequest($"/v2/tasks", Method.Patch);
 
         var updateDto = new UpdateTaskDto() { Id = int.Parse(taskRequest.TaskId) };
@@ -118,6 +138,11 @@ public class TaskActions : WorldserverInvocable
     public async Task AssignTask([ActionParameter] GetTaskRequest taskRequest,
         [ActionParameter] AssignTaskRequest assignTaskRequest)
     {
+        if (string.IsNullOrEmpty(taskRequest.TaskId))
+        {
+            throw new PluginMisconfigurationException("Task Id is required to assign a task.");
+        }
+
         var request = new WorldserverRequest($"/v2/tasks/changeAssignees", Method.Post);
         request.AddJsonBody(JsonConvert.SerializeObject(new[]
         {
@@ -136,6 +161,11 @@ public class TaskActions : WorldserverInvocable
     public async Task CompleteTaskStep([ActionParameter] GetTaskRequest taskRequest,
         [ActionParameter] CompleteTaskStepRequest completeStepRequest)
     {
+        if (string.IsNullOrEmpty(taskRequest.TaskId))
+        {
+            throw new PluginMisconfigurationException("Task Id is required to complete a task.");
+        }
+
         var request = new WorldserverRequest($"/v2/tasks/complete", Method.Post);
         request.AddJsonBody(JsonConvert.SerializeObject(new[]
         {
@@ -153,6 +183,11 @@ public class TaskActions : WorldserverInvocable
     public async Task<FileReference> ExportTask([ActionParameter] GetTaskRequest taskRequest,
         [ActionParameter] ExportTaskRequest exportTaskRequest)
     {
+        if (string.IsNullOrEmpty(taskRequest.TaskId))
+        {
+            throw new PluginMisconfigurationException("Task Id is required to export a task.");
+        }
+
         var startExportRequest = new WorldserverRequest($"/v2/tasks/export", Method.Post);
 
         var zippedFileTypes = new[] { "XLIFF", "BDX" };
@@ -232,6 +267,10 @@ public class TaskActions : WorldserverInvocable
         [ActionParameter] ProjectIdRequest projectIdRequest,
         [ActionParameter] ExportAllTasksRequest exportTaskRequest)
     {
+        if (string.IsNullOrEmpty(projectIdRequest.ProjectId))
+        {
+            throw new PluginMisconfigurationException("Project Id is required to export all tasks from a project.");
+        }
         var taskIds = await GetTaskIdsByProject(projectIdRequest.ProjectId);
 
         if (!taskIds.Any())
@@ -259,7 +298,7 @@ public class TaskActions : WorldserverInvocable
         }
         catch (Exception ex)
         {
-            throw new Exception("Error retrieving project details: " + ex.Message);
+            throw new PluginApplicationException("Error retrieving project details: " + ex.Message);
         }
     }
 
@@ -282,14 +321,14 @@ public class TaskActions : WorldserverInvocable
 
             if (!exportResponse.IsSuccessful)
             {
-                throw new Exception("Export request failed with status: " + exportResponse.StatusCode);
+                throw new PluginApplicationException("Export request failed with status: " + exportResponse.StatusCode);
             }
 
 
             var responseJson = JsonConvert.DeserializeObject<ExportResponse>(exportResponse.Content);
             if (responseJson == null || responseJson.Response == null)
             {
-                throw new Exception("Invalid response format received.");
+                throw new PluginApplicationException("Invalid response format received.");
             }
 
 
@@ -301,7 +340,7 @@ public class TaskActions : WorldserverInvocable
                 var pollResponse = await Client.ExecuteAsync(pollExportStatusRequest);
 
                 if (!pollResponse.IsSuccessful)
-                    throw new Exception("Polling request failed.");
+                    throw new PluginApplicationException("Polling request failed.");
 
                 exportStatusResponse = JsonConvert.DeserializeObject<JobDto>(pollResponse.Content);
             } while (exportStatusResponse.Status == "STILL_IN_PROGRESS" || exportStatusResponse.Status == "NOT_STARTED");
@@ -327,7 +366,7 @@ public class TaskActions : WorldserverInvocable
         }
         catch (Exception ex)
         {
-            throw new Exception("Error exporting tasks as ZIP: " + ex.Message);
+            throw new PluginApplicationException("Error exporting tasks as ZIP: " + ex.Message);
         }
 
     }
