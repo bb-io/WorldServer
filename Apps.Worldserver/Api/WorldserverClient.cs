@@ -6,7 +6,6 @@ using Blackbird.Applications.Sdk.Utils.Extensions.String;
 using Blackbird.Applications.Sdk.Utils.RestSharp;
 using Newtonsoft.Json;
 using RestSharp;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Apps.Worldserver.Api;
 
@@ -34,14 +33,13 @@ public class WorldserverClient : BlackBirdRestClient
             return new PluginApplicationException(response.ErrorMessage);
         }
         
-        var errors = JsonConvert.DeserializeObject<WorldserverError>(response.Content!)!;
-        if(errors.Errors.Any())
+        var firstError = TryDeserialize<WorldserverError>(response.Content)?.Errors?.FirstOrDefault();
+        if (firstError != null)
         {
-            var firstError = errors.Errors.First();
             return new PluginApplicationException(
                 $"Error type: {firstError.Type}; Message: {firstError.Message}");
         }
-        
+
         return new PluginApplicationException($"Request failed with status code {response.StatusCode}. Content: {response.Content}");
     }
 
@@ -83,7 +81,16 @@ public class WorldserverClient : BlackBirdRestClient
             username,
             password
         });
-        return this.Execute<AuthResponseDto>(request).Data.SessionId;
+        var response = ExecuteWithErrorHandling(request).GetAwaiter().GetResult();
+        var authResponse = TryDeserialize<AuthResponseDto>(response.Content);
+        if (string.IsNullOrWhiteSpace(authResponse?.SessionId))
+        {
+            throw new PluginMisconfigurationException(
+                $"Failed to log in to WorldServer. Login outcome: {authResponse?.LoginOutcome ?? "unknown"}. " +
+                "Please check the instance URL, username and password in the connection.");
+        }
+
+        return authResponse.SessionId;
     }
 
     public override async Task<RestResponse> ExecuteWithErrorHandling(RestRequest request)
@@ -114,12 +121,27 @@ public class WorldserverClient : BlackBirdRestClient
                 throw new PluginMisconfigurationException($"Error type: {firstError.Type}.\nMessage: {firstError.Message}");
             }           
         }
-        catch(PluginMisconfigurationException ex)
+        catch (Exception exception) when (exception is not PluginMisconfigurationException)
         {
-            throw;
         }
-        catch (Exception ex){}
-        
+
         return restResponse;
+    }
+
+    private static T? TryDeserialize<T>(string? content) where T : class
+    {
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return null;
+        }
+
+        try
+        {
+            return JsonConvert.DeserializeObject<T>(content);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 }
